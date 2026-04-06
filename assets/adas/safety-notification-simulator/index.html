@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safety Notification Simulator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Full-screen scene view (for composite scene images) -->
+    <div id="scene-view" class="scene-view hidden">
+        <img id="scene-image" class="scene-image" src="" alt="Driver point of view — safety scenario" />
+        <!-- Preload container for next image (prevents flash on swap) -->
+        <img id="scene-image-next" class="scene-image scene-image-next" src="" alt="" />
+    </div>
+
+    <!-- Full-screen vehicle view (legacy layered approach) -->
+    <div id="vehicle-background" class="vehicle-background">
+        <div id="loading-indicator" class="loading-indicator hidden" role="status" aria-live="polite">
+            <p>Loading vehicle image...</p>
+        </div>
+        <div id="error-message" class="error-message hidden" role="alert" aria-live="assertive">
+            <p>Failed to load vehicle image. Please refresh the page.</p>
+        </div>
+
+        <!-- Alert overlay areas (behind car) -->
+        <div id="center-console" class="tablet-surface center-console" role="region" aria-label="Center console display">
+            <img src="./assets/screens/center-console/Rivian-tablet-view.png" alt="Center console display" class="default-screen-image">
+        </div>
+        <div id="driver-cluster" class="tablet-surface driver-cluster" role="region" aria-label="Driver cluster display">
+            <img src="./assets/screens/driver-cluster/alerts/BASE IC MAP.png" alt="Driver cluster display" class="default-screen-image" id="driver-cluster-default">
+        </div>
+
+        <!-- Car interior overlay (on top) -->
+        <div id="vehicle-overlay" class="vehicle-overlay"></div>
+    </div>
+
+    <!-- Floating control panel -->
+    <aside id="control-panel" class="control-panel">
+        <div class="panel-header">
+            <h1>Safety Notification Simulator</h1>
+            <button id="minimize-btn" class="minimize-btn" aria-label="Minimize control panel">
+                <span class="minimize-icon">−</span>
+            </button>
+        </div>
+        
+        <div class="panel-content">
+            <div class="control-group">
+                <label for="scenario-select">Safety Scenario</label>
+                <select id="scenario-select" aria-label="Select a safety scenario">
+                    <option value="">Select a scenario</option>
+                </select>
+            </div>
+
+            <div class="control-group hidden" id="severity-group">
+                <label>Variation</label>
+                <div class="severity-buttons" id="severity-buttons-container" role="group" aria-label="Select variation">
+                </div>
+            </div>
+
+            <div id="audio-info" class="audio-info hidden" role="region" aria-label="Audio information">
+                <h3>🔊 Audio</h3>
+                <p id="audio-description"></p>
+            </div>
+
+            <button id="reset-btn" class="reset-btn" aria-label="Reset simulation">Reset Simulation</button>
+        </div>
+    </aside>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

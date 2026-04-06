@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Case study: Building visual feedback tools for vibe coding at Amazon. Screenshot capture, markup stickers, and structured export for AI-assisted development.">
+    <meta property="og:title" content="Building Visual Tools to Improve Vibe Coding — Daniel Hennessy">
+    <meta property="og:description" content="Case study: Building visual feedback tools for vibe coding at Amazon. Screenshot capture, markup stickers, and structured export for AI-assisted development.">
+    <meta property="og:url" content="https://dhennessy.xyz/work/vibe-coding.html">
+    <meta property="og:type" content="article">
+    <meta name="author" content="Daniel Hennessy">
+        <link rel="canonical" href="https://dhennessy.xyz/work/vibe-coding.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<title>Building Visual Tools to Improve Vibe Coding — Daniel Hennessy</title>
+<style>
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f5f0;
+    --red: #e63312;
+    --gray: #888;
+    --dark-gray: #555;
+    --rule: rgba(0, 0, 0, 0.05);
+    --rule-heavy: rgba(0, 0, 0, 0.05);
+    --margin: clamp(24px, 5vw, 80px);
+    --gutter: clamp(16px, 2vw, 24px);
+    --cols: 6;
+
+  }
+
+  body {
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    background-color: var(--white);
+    color: var(--black);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============================================
+     STRUCTURAL GRID — 6-column Brockmann system
+     ============================================ */
+
+  /* Column guides — faint vertical lines showing the underlying structure */
+  .grid-guides {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: var(--gutter);
+    padding: 0 var(--margin);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .grid-guides .col-guide {
+    border-left: 1px solid rgba(0, 0, 0, 0.05);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  /* Base grid row — everything on the page snaps to this */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: 0 var(--gutter);
+    padding: 0 var(--margin);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Column span utilities */
+  .col-1-2 { grid-column: 1 / 3; }
+  .col-1-3 { grid-column: 1 / 4; }
+  .col-1-4 { grid-column: 1 / 5; }
+  .col-1-6 { grid-column: 1 / -1; }
+  .col-2-5 { grid-column: 2 / 6; }
+  .col-2-6 { grid-column: 2 / -1; }
+  .col-3-6 { grid-column: 3 / -1; }
+  .col-3-4 { grid-column: 3 / 5; }
+  .col-4-6 { grid-column: 4 / -1; }
+  .col-5-6 { grid-column: 5 / -1; }
+
+  /* ============================================
+     NAV
+     ============================================ */
+  nav {
+    padding: var(--margin);
+    padding-bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    position: relative;
+    z-index: 1;
+  }
+  nav .name {
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  nav .name a {
+    color: var(--black);
+    text-decoration: none;
+  }
+  nav .back {
+    font-size: 13px;
+    color: var(--gray);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  nav .back:hover { color: var(--black); }
+
+  /* ============================================
+     CASE STUDY HEADER — spans grid
+     ============================================ */
+  .cs-header {
+    padding-top: clamp(60px, 10vh, 120px);
+    padding-bottom: clamp(40px, 6vh, 80px);
+    align-items: end;
+  }
+  .cs-header .number {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--red);
+    text-transform: uppercase;
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .cs-header .header-content h1 {
+    font-size: clamp(36px, 5.5vw, 72px);
+    font-weight: 900;
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    max-width: 18ch;
+  }
+  .cs-header .header-content .lede {
+    margin-top: 24px;
+    font-size: clamp(17px, 2vw, 22px);
+    line-height: 1.5;
+    color: var(--dark-gray);
+    max-width: 48ch;
+  }
+
+  /* ============================================
+     META BAR — snaps to grid columns
+     ============================================ */
+  .meta-bar {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    border-top: 1px solid var(--rule-heavy);
+    border-bottom: 1px solid var(--rule-heavy);
+  }
+  .meta-bar dt {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    margin-bottom: 6px;
+  }
+  .meta-bar dd {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* ============================================
+     HERO IMAGE — full width
+     ============================================ */
+  .cs-hero {
+    margin-top: clamp(32px, 5vh, 64px);
+  }
+  .cs-hero .hero-img {
+    overflow: hidden;
+    border-radius: 4px;
+  }
+  .cs-hero .hero-img img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* ============================================
+     SECTION BLOCKS — label in col 1-2, content in 3-6
+     ============================================ */
+  .section-block {
+    padding-top: clamp(48px, 6vh, 96px);
+    padding-bottom: clamp(48px, 6vh, 96px);
+  }
+  .section-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .section-content h2 {
+    font-size: clamp(24px, 2.8vw, 34px);
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  .section-content p {
+    font-size: 16px;
+    line-height: 1.75;
+    color: #444;
+    margin-bottom: 16px;
+    max-width: 58ch;
+  }
+
+  /* ============================================
+     DIVIDERS
+     ============================================ */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 0 var(--margin);
+  }
+  .divider-heavy {
+    border: none;
+    border-top: 1px solid var(--rule-heavy);
+    margin: 0 var(--margin);
+  }
+
+  /* ============================================
+     PULL QUOTE — full-width, red line at left edge
+     ============================================ */
+  .pull-quote-block {
+    padding-top: clamp(48px, 6vh, 80px);
+    padding-bottom: clamp(48px, 6vh, 80px);
+  }
+  .pull-quote {
+    font-size: clamp(24px, 3.2vw, 42px);
+    font-weight: 900;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--black);
+    margin: 0;
+    padding: 0 0 0 clamp(16px, 2vw, 24px);
+    position: relative;
+    /* Kill Safari's blockquote defaults */
+    -webkit-margin-start: 0;
+    -webkit-margin-end: 0;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+  }
+  /* Red line aligned to the left edge of column 1 */
+  .pull-quote::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 3px;
+    background: var(--red);
+  }
+  .pull-quote .pq-attribution {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--gray);
+    margin-top: 16px;
+  }
+
+  /* ============================================
+     IMAGE LAYOUTS — multiple configurations
+     ============================================ */
+  .img-full {
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .img-full img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .img-half {
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .img-half img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .img-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .matched-height {
+    height: clamp(260px, 32vw, 480px);
+  }
+  .matched-height img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+  }
+
+  /* Image caption */
+  .img-caption {
+    font-size: 12px;
+    color: var(--gray);
+    margin-top: 10px;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+  }
+
+  /* Spacing between image rows */
+  .img-row { margin-top: var(--gutter); }
+  .img-row:first-child { margin-top: 0; }
+
+  /* ============================================
+     RESULTS SECTION
+     ============================================ */
+  .results-block {
+    padding-top: clamp(48px, 6vh, 80px);
+    padding-bottom: clamp(48px, 6vh, 80px);
+  }
+  /* Results header — label + h2 sit below the heavy divider HR */
+  .results-rule {
+    padding-bottom: clamp(32px, 4vh, 56px);
+  }
+  .results-block h2 {
+    font-size: clamp(24px, 2.8vw, 34px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-cell {
+    padding: clamp(24px, 3vw, 40px) 0;
+    border-bottom: 1px solid var(--rule-heavy);
+  }
+  .stat-cell .number-lg {
+    font-size: clamp(40px, 5.5vw, 64px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--black);
+    line-height: 1;
+  }
+  .stat-cell .stat-label {
+    font-size: 13px;
+    margin-top: 8px;
+    color: var(--red);
+    line-height: 1.5;
+  }
+
+  .results-context {
+    margin-top: clamp(32px, 4vh, 48px);
+  }
+  .results-context p {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #444;
+    margin-bottom: 12px;
+  }
+  .results-context strong {
+    color: var(--black);
+  }
+
+  /* ============================================
+     NEXT PROJECT — full card with image
+     ============================================ */
+  .next-project {
+    padding: clamp(48px, 6vh, 80px) 0;
+    border-top: 1px solid var(--rule-heavy);
+  }
+  .next-project-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gray);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .next-project-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gutter);
+  }
+  .next-project-content .next-text h3 {
+    font-size: clamp(24px, 3vw, 38px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .next-project-content .next-text h3 a {
+    color: var(--black);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .next-project-content .next-text h3 a:hover { color: var(--red); }
+  .next-project-content .next-text .next-meta {
+    font-size: 13px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .next-project-content .next-img {
+    background: #e0ddd8;
+    height: clamp(160px, 20vw, 260px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ============================================
+     FOOTER
+     ============================================ */
+  footer {
+    padding: 32px var(--margin);
+    font-size: 12px;
+    color: var(--gray);
+    letter-spacing: 0.04em;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ============================================
+     RESPONSIVE — grid collapses below 768px
+     ============================================ */
+  @media (max-width: 768px) {
+    :root { --cols: 1; }
+
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .col-1-2, .col-1-3, .col-1-4, .col-1-6,
+    .col-2-5, .col-2-6, .col-3-6, .col-3-4,
+    .col-4-6, .col-5-6 {
+      grid-column: 1 / -1;
+    }
+
+    .grid-guides { display: none; }
+
+    .meta-bar.grid {
+      grid-template-columns: 1fr 1fr;
+      row-gap: 20px;
+    }
+
+    .next-project-content {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Keyboard focus indicators (accessibility) */
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  *:focus { outline: none; }  /* Remove default only when :focus-visible is supported */
+
+</style>
+</head>
+<body>
+
+<!-- STRUCTURAL GRID GUIDES — visible Brockmann homage -->
+<div class="grid-guides" aria-hidden="true">
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="name"><a href="../index.html">Daniel Hennessy</a></div>
+  <a class="back" href="../index.html">&larr; All Projects</a>
+</nav>
+
+<!-- ============================================
+     HEADER — label col 1-2, title col 3-6
+     ============================================ -->
+<div class="grid cs-header">
+  <div class="col-1-2">
+    <span class="number">Case Study 06</span>
+  </div>
+  <div class="col-3-6 header-content">
+    <h1>Building visual tools to improve vibe coding</h1>
+    <p class="lede">Designed and built the Visual Playground — a markup tool that lets designers give AI-powered design tools the precision that written feedback can't touch.</p>
+  </div>
+</div>
+
+<!-- ============================================
+     META BAR
+     ============================================ -->
+<div class="grid meta-bar">
+  <dl class="col-1-2">
+    <dt>Role</dt>
+    <dd>Designer & Developer</dd>
+  </dl>
+  <dl class="col-3-4">
+    <dt>Company</dt>
+    <dd>Amazon</dd>
+  </dl>
+  <dl class="col-5-6">
+    <dt>Type</dt>
+    <dd>Internal Tool</dd>
+  </dl>
+</div>
+
+<!-- ============================================
+     HERO IMAGE
+     ============================================ -->
+<div class="grid cs-hero">
+  <div class="col-1-6 hero-img">
+    <img src="../assets/vibe-coding/working-playground-page.png" alt="The Visual Playground — a clean canvas with a captured screenshot, ready for markup">
+  </div>
+</div>
+
+<!-- ============================================
+     SITUATION
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Situation</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>The painful gap between seeing a problem and describing it</h2>
+    <p>AI-powered design tools are changing how teams build interfaces, but they share a fundamental limitation: they rely on written instructions. When a designer spots an alignment issue, a contrast problem, or a hierarchy that's off — they have to translate what they <em>see</em> into words. That translation is slow, imprecise, and loses critical context about exactly where and what needs to change.</p>
+    <p>I wanted to build a tool for my design community at Amazon that closes this gap — something that lets designers point directly at the problem and communicate it visually, with the precision that a marked-up screenshot provides over a paragraph of text.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================
+     ACTION — The Visual Playground
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Action</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>Building the Visual Playground</h2>
+    <p>The tool lives behind a green pyramid FAB at the bottom-left of the screen — always available, never in the way. One click opens the Visual Playground: a dedicated canvas where the current screen is captured and centered, ready for markup.</p>
+  </div>
+</div>
+
+<!-- Working page + FAB side by side -->
+<div class="grid img-row" style="align-items: start;">
+  <div class="col-1-3">
+    <div class="img-label">The vibe coded environment</div>
+    <div class="img-half matched-height">
+      <img src="../assets/vibe-coding/working-page.png" alt="The original Amazon Freight page before markup" style="object-position: left center;">
+    </div>
+    <div class="img-caption">A live page in the Amazon Freight prototype — this is what gets captured when a designer enters the playground.</div>
+  </div>
+  <div class="col-4-6">
+    <div class="img-label">The entry point</div>
+    <div class="img-half matched-height">
+      <img src="../assets/vibe-coding/Playground-ingress.png" alt="The green pyramid floating action button — entry point to the Visual Playground">
+    </div>
+    <div class="img-caption">The green pyramid FAB sits at the bottom-left of every page, giving designers instant access to the playground.</div>
+  </div>
+</div>
+
+<!-- Capture flow: empty state → permission → loaded playground -->
+<div class="grid img-row" style="margin-top: clamp(32px, 4vh, 48px);">
+  <div class="col-1-2">
+    <div class="section-label">Capture</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <p>Clicking the FAB opens the Visual Playground in its empty state — a clean canvas with markup tools along the bottom and a sticker panel on the right. From here, the designer captures their current tab. The browser asks for permission, the page is grabbed as a high-fidelity screenshot, and it's loaded onto the canvas — ready for markup.</p>
+  </div>
+</div>
+
+<div class="grid img-row">
+  <div class="col-1-3">
+    <div class="img-label">The empty playground</div>
+    <div class="img-full">
+      <img src="../assets/vibe-coding/empty-playground.png" alt="Empty playground state with capture prompt and tools">
+    </div>
+    <div class="img-caption">The empty state. Tools line the bottom, sticker panel on the right — waiting for a screenshot to work with.</div>
+  </div>
+  <div class="col-4-6">
+    <div class="img-label">Screen capture</div>
+    <div class="img-full">
+      <img src="../assets/vibe-coding/screen-capture-flow.png" alt="Browser permission dialog requesting tab capture">
+    </div>
+    <div class="img-caption">The browser permission dialog — one click and the current tab is captured.</div>
+  </div>
+</div>
+
+<!-- Working playground — screenshot loaded, before markup -->
+<div class="grid img-row" style="margin-top: clamp(32px, 4vh, 48px);">
+  <div class="col-1-6">
+    <div class="img-label">Screenshot captured</div>
+    <div class="img-full">
+      <img src="../assets/vibe-coding/working-playground-page.png" alt="The Visual Playground with a captured screenshot loaded, ready for markup">
+    </div>
+    <div class="img-caption">The captured screenshot is loaded onto the canvas — everything is in place before a single annotation is made.</div>
+  </div>
+</div>
+
+<!-- Markup — stickers + annotation -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Markup</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>Annotation tools built for design feedback</h2>
+    <p>The bottom toolbar offers drawing, annotation, and highlighting tools. But the real accelerator is the sticker panel: pre-built tags for common design issues that designers can drag directly onto elements. The stickers do double duty — they speed up feedback, and they act as a checklist that helps designers remember the full vocabulary of design principles while reviewing their work.</p>
+  </div>
+</div>
+
+<div class="grid img-row">
+  <div class="col-3-6">
+    <div class="img-full">
+      <img src="../assets/vibe-coding/sticker-sheet.png" alt="Sticker panel with 10 pre-built design feedback tags">
+    </div>
+    <div class="img-caption">Ten stickers covering the most common design feedback — from "Fix alignment" to "Improve affordance." Drag, drop, and annotate.</div>
+  </div>
+</div>
+
+<!-- Full-width marked-up page -->
+<div class="grid img-row">
+  <div class="col-1-6">
+    <div class="img-full">
+      <img src="../assets/vibe-coding/marked-up-page.png" alt="A fully marked-up page with annotations, stickers, and comments">
+    </div>
+    <div class="img-caption">A page marked up with annotations, sticker tags, and specific comments — all placed directly on the elements that need attention.</div>
+  </div>
+</div>
+
+<hr class="divider" style="margin-top: clamp(48px, 6vh, 80px);">
+
+<!-- ============================================
+     ACTION — Export to Kiro
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Export</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>One click from feedback to action</h2>
+    <p>The final step is "Export to Kiro." One click generates a structured markdown file paired with the annotated visual and drops both directly into Kiro — Amazon's AI-powered design tool. No copy-pasting, no reformatting, no switching contexts. The designer's visual feedback arrives exactly as they created it, ready to be acted on without additional work.</p>
+    <p>The tool was built for Amazon's design community but designed to be used by anyone — designers, PMs, engineers — anyone who needs to give precise visual feedback to an AI tool.</p>
+  </div>
+</div>
+
+<!-- ============================================
+     PULL QUOTE
+     ============================================ -->
+<div class="grid pull-quote-block">
+  <blockquote class="col-1-6 pull-quote">
+    A marked-up screenshot gives AI tools a degree of precision that written feedback can't touch.
+  </blockquote>
+</div>
+
+<hr class="divider-heavy">
+
+<!-- ============================================
+     RESULTS
+     ============================================ -->
+<div class="grid results-block">
+  <div class="col-1-2 results-rule">
+    <span class="section-label">Results</span>
+  </div>
+  <div class="col-3-6 results-rule">
+    <h2>Closing the feedback loop</h2>
+  </div>
+
+  <div class="col-1-3 results-context">
+    <p>The Visual Playground is a working prototype built for Amazon's design community. By combining visual markup with structured export, it eliminates the lossy translation between what a designer sees and what an AI tool receives — turning a paragraph of imprecise instructions into a precise, annotated visual.</p>
+  </div>
+  <div class="col-4-6 results-context">
+    <p>The tool demonstrates a broader principle: as AI takes on more of the execution work in design, the feedback layer becomes the critical interface. The designers who can communicate precisely — visually, not just verbally — will get dramatically better results from their tools.</p>
+  </div>
+</div>
+
+<!-- ============================================
+     NEXT PROJECT
+     ============================================ -->
+<div class="grid" style="padding-top: clamp(24px, 3vh, 48px);">
+  <div class="col-1-6 next-project">
+    <div class="grid" style="padding: 0;">
+      <div class="col-1-2">
+        <span class="next-project-label">Next Project</span>
+      </div>
+      <div class="col-3-6 next-project-content">
+        <div class="next-text">
+          <h3><a href="adas.html">Adding ADAS intelligence to older delivery vehicles &rarr;</a></h3>
+          <span class="next-meta">Amazon &middot; Vehicle Safety</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>&copy; 2026 Daniel Hennessy</footer>
+
+</body>
+</html>

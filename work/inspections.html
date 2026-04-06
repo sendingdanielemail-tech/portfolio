@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Case study: Modernizing vehicle inspections at Amazon. From manual checklists to automated tunnel scanning to AI-driven handheld tools.">
+    <meta property="og:title" content="Modernizing Vehicle Inspections — Daniel Hennessy">
+    <meta property="og:description" content="Case study: Modernizing vehicle inspections at Amazon. From manual checklists to automated tunnel scanning to AI-driven handheld tools.">
+    <meta property="og:url" content="https://dhennessy.xyz/work/inspections.html">
+    <meta property="og:type" content="article">
+    <meta name="author" content="Daniel Hennessy">
+        <link rel="canonical" href="https://dhennessy.xyz/work/inspections.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<title>Modernizing Vehicle Inspections — Daniel Hennessy</title>
+<style>
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f5f0;
+    --red: #e63312;
+    --gray: #888;
+    --dark-gray: #555;
+    --rule: rgba(0, 0, 0, 0.05);
+    --rule-heavy: rgba(0, 0, 0, 0.05);
+    --margin: clamp(24px, 5vw, 80px);
+    --gutter: clamp(16px, 2vw, 24px);
+    --cols: 6;
+
+  }
+
+  body {
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    background-color: var(--white);
+    color: var(--black);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============================================
+     STRUCTURAL GRID — 6-column Brockmann system
+     ============================================ */
+
+  /* Column guides — faint vertical lines showing the underlying structure */
+  .grid-guides {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: var(--gutter);
+    padding: 0 var(--margin);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .grid-guides .col-guide {
+    border-left: 1px solid rgba(0, 0, 0, 0.05);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  /* Base grid row — everything on the page snaps to this */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: 0 var(--gutter);
+    padding: 0 var(--margin);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Column span utilities */
+  .col-1-2 { grid-column: 1 / 3; }
+  .col-1-3 { grid-column: 1 / 4; }
+  .col-1-4 { grid-column: 1 / 5; }
+  .col-1-6 { grid-column: 1 / -1; }
+  .col-2-5 { grid-column: 2 / 6; }
+  .col-2-6 { grid-column: 2 / -1; }
+  .col-3-6 { grid-column: 3 / -1; }
+  .col-3-4 { grid-column: 3 / 5; }
+  .col-4-6 { grid-column: 4 / -1; }
+  .col-5-6 { grid-column: 5 / -1; }
+
+  /* ============================================
+     NAV
+     ============================================ */
+  nav {
+    padding: var(--margin);
+    padding-bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    position: relative;
+    z-index: 1;
+  }
+  nav .name {
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  nav .name a {
+    color: var(--black);
+    text-decoration: none;
+  }
+  nav .back {
+    font-size: 13px;
+    color: var(--gray);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  nav .back:hover { color: var(--black); }
+
+  /* ============================================
+     CASE STUDY HEADER — spans grid
+     ============================================ */
+  .cs-header {
+    padding-top: clamp(60px, 10vh, 120px);
+    padding-bottom: clamp(40px, 6vh, 80px);
+    align-items: end;
+  }
+  .cs-header .number {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--red);
+    text-transform: uppercase;
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .cs-header .header-content h1 {
+    font-size: clamp(36px, 5.5vw, 72px);
+    font-weight: 900;
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    max-width: 18ch;
+  }
+  .cs-header .header-content .lede {
+    margin-top: 24px;
+    font-size: clamp(17px, 2vw, 22px);
+    line-height: 1.5;
+    color: var(--dark-gray);
+    max-width: 48ch;
+  }
+
+  /* ============================================
+     META BAR — snaps to grid columns
+     ============================================ */
+  .meta-bar {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    border-top: 1px solid var(--rule-heavy);
+    border-bottom: 1px solid var(--rule-heavy);
+  }
+  .meta-bar dt {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    margin-bottom: 6px;
+  }
+  .meta-bar dd {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* ============================================
+     HERO IMAGE — full width
+     ============================================ */
+  .cs-hero {
+    margin-top: clamp(32px, 5vh, 64px);
+  }
+  .cs-hero .hero-img {
+    background: #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    overflow: hidden;
+    border-radius: 4px;
+  }
+  .cs-hero .hero-img img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* ============================================
+     SECTION BLOCKS — label in col 1-2, content in 3-6
+     ============================================ */
+  .section-block {
+    padding-top: clamp(48px, 6vh, 96px);
+    padding-bottom: clamp(48px, 6vh, 96px);
+  }
+  .section-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .section-content h2 {
+    font-size: clamp(24px, 2.8vw, 34px);
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  .section-content p {
+    font-size: 16px;
+    line-height: 1.75;
+    color: #444;
+    margin-bottom: 16px;
+    max-width: 58ch;
+  }
+
+  /* ============================================
+     DIVIDERS
+     ============================================ */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 0 var(--margin);
+  }
+  .divider-heavy {
+    border: none;
+    border-top: 1px solid var(--rule-heavy);
+    margin: 0 var(--margin);
+  }
+
+  /* ============================================
+     PULL QUOTE — full-width, red line at left edge
+     ============================================ */
+  .pull-quote-block {
+    padding-top: clamp(48px, 6vh, 80px);
+    padding-bottom: clamp(48px, 6vh, 80px);
+  }
+  .pull-quote {
+    font-size: clamp(24px, 3.2vw, 42px);
+    font-weight: 900;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--black);
+    margin: 0;
+    padding: 0 0 0 clamp(16px, 2vw, 24px);
+    position: relative;
+    /* Kill Safari's blockquote defaults */
+    -webkit-margin-start: 0;
+    -webkit-margin-end: 0;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+  }
+  /* Red line aligned to the left edge of column 1 */
+  .pull-quote::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 3px;
+    background: var(--red);
+  }
+  .pull-quote .pq-attribution {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--gray);
+    margin-top: 16px;
+  }
+
+  /* ============================================
+     IMAGE LAYOUTS — multiple configurations
+     ============================================ */
+  /* Full-width single image */
+  .img-full {
+    background: #e0ddd8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .img-full img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* 2-up image pair (each 3 columns) */
+  .img-half {
+    background: #e0ddd8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .img-half img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* 3-up image row (each 2 columns) */
+  .img-third {
+    background: #e0ddd8;
+    height: clamp(160px, 22vw, 300px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    overflow: hidden;
+  }
+
+  /* Image caption */
+  .img-caption {
+    font-size: 12px;
+    color: var(--gray);
+    margin-top: 10px;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+  }
+
+  /* Spacing between image rows */
+  .img-row { margin-top: var(--gutter); }
+  .img-row:first-child { margin-top: 0; }
+
+  /* ============================================
+     RESULTS SECTION
+     ============================================ */
+  .results-block {
+    padding-top: clamp(48px, 6vh, 80px);
+    padding-bottom: clamp(48px, 6vh, 80px);
+  }
+  /* Results header — label + h2 sit below the heavy divider HR */
+  .results-rule {
+    padding-bottom: clamp(32px, 4vh, 56px);
+  }
+  .results-block h2 {
+    font-size: clamp(24px, 2.8vw, 34px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-cell {
+    padding: clamp(24px, 3vw, 40px) 0;
+    border-bottom: 1px solid var(--rule-heavy);
+  }
+  .stat-cell .number-lg {
+    font-size: clamp(40px, 5.5vw, 64px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--black);
+    line-height: 1;
+  }
+  .stat-cell .stat-label {
+    font-size: 13px;
+    margin-top: 8px;
+    color: var(--red);
+    line-height: 1.5;
+  }
+
+  .results-context {
+    margin-top: clamp(32px, 4vh, 48px);
+  }
+  .results-context p {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #444;
+    margin-bottom: 12px;
+  }
+  .results-context strong {
+    color: var(--black);
+  }
+
+  /* ============================================
+     NEXT PROJECT — full card with image
+     ============================================ */
+  .next-project {
+    padding: clamp(48px, 6vh, 80px) 0;
+    border-top: 1px solid var(--rule-heavy);
+  }
+  .next-project-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gray);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .next-project-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gutter);
+  }
+  .next-project-content .next-text h3 {
+    font-size: clamp(24px, 3vw, 38px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .next-project-content .next-text h3 a {
+    color: var(--black);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .next-project-content .next-text h3 a:hover { color: var(--red); }
+  .next-project-content .next-text .next-meta {
+    font-size: 13px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .next-project-content .next-img {
+    background: #e0ddd8;
+    height: clamp(160px, 20vw, 260px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ============================================
+     FOOTER
+     ============================================ */
+  footer {
+    padding: 32px var(--margin);
+    font-size: 12px;
+    color: var(--gray);
+    letter-spacing: 0.04em;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ============================================
+     RESPONSIVE — grid collapses below 768px
+     ============================================ */
+  @media (max-width: 768px) {
+    :root { --cols: 1; }
+
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .col-1-2, .col-1-3, .col-1-4, .col-1-6,
+    .col-2-5, .col-2-6, .col-3-6, .col-3-4,
+    .col-4-6, .col-5-6 {
+      grid-column: 1 / -1;
+    }
+
+    .grid-guides { display: none; }
+
+    .meta-bar.grid {
+      grid-template-columns: 1fr 1fr;
+      row-gap: 20px;
+    }
+
+    .next-project-content {
+      grid-template-columns: 1fr;
+    }
+
+    .avi-carousel { grid-column: 1 / -1; }
+  }
+
+  /* ============================================
+     ZOOMABLE IMAGE
+     ============================================ */
+  .zoomable {
+    cursor: zoom-in;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+  .zoomable img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+  .zoomable.zoomed {
+    cursor: zoom-out;
+    overflow: auto;
+    max-height: 80vh;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .zoomable.zoomed img {
+    width: 200%;
+    max-width: none;
+  }
+
+  /* ============================================
+     AVI TUNNEL CAROUSEL
+     ============================================ */
+  .avi-carousel {
+    position: relative;
+    border-radius: 4px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+  .avi-carousel .avi-track {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+  .avi-carousel .avi-slide {
+    display: none;
+    width: 100%;
+  }
+  .avi-carousel .avi-slide.active {
+    display: block;
+  }
+  .avi-carousel .avi-slide img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+  }
+  .avi-carousel .avi-dots {
+    text-align: center;
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    background-color: #ffffff;
+    border-radius: 0 0 4px 4px;
+  }
+  .avi-carousel .avi-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.15);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.3s;
+  }
+  .avi-carousel .avi-dot.active {
+    background: rgba(0,0,0,0.5);
+  }
+
+  /* Keyboard focus indicators (accessibility) */
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  *:focus { outline: none; }  /* Remove default only when :focus-visible is supported */
+
+</style>
+</head>
+<body>
+
+<!-- STRUCTURAL GRID GUIDES — visible Brockmann homage -->
+<div class="grid-guides" aria-hidden="true">
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="name"><a href="../index.html">Daniel Hennessy</a></div>
+  <a class="back" href="../index.html">&larr; All Projects</a>
+</nav>
+
+<!-- ============================================
+     HEADER — label col 1-2, title col 3-6
+     ============================================ -->
+<div class="grid cs-header">
+  <div class="col-1-2">
+    <span class="number">Case Study 02</span>
+  </div>
+  <div class="col-3-6 header-content">
+    <h1>Modernizing vehicle inspections</h1>
+    <p class="lede">Replacing a paper-made-digital checklist with a camera-first walk-around &mdash; transforming daily vehicle inspections from a compliance chore into visual evidence that fleet managers can actually trust.</p>
+  </div>
+</div>
+
+<!-- ============================================
+     META BAR — 3 items across 6 columns
+     ============================================ -->
+<div class="grid meta-bar">
+  <dl class="col-1-2">
+    <dt>Role</dt>
+    <dd>Lead Product Designer</dd>
+  </dl>
+  <dl class="col-3-4">
+    <dt>Company</dt>
+    <dd>Amazon (Last Mile)</dd>
+  </dl>
+  <dl class="col-5-6">
+    <dt>Duration</dt>
+    <dd>2018 – 2020</dd>
+  </dl>
+</div>
+
+<!-- ============================================
+     HERO IMAGE — full 6-column bleed
+     ============================================ -->
+<div class="grid cs-hero">
+  <div class="col-1-6 hero-img">
+    <img src="../assets/inspections/00-Hero-image.png" alt="Amazon delivery van inside an automated vehicle inspection tunnel">
+  </div>
+</div>
+
+<!-- ============================================
+     SITUATION
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Situation</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>A paper form made digital &mdash; and drivers treated it that way</h2>
+    <p>As lead product designer for safety and innovation at Amazon Last Mile, I inherited the daily vehicle inspection &mdash; a federally mandated check (DVIR) that every DSP driver completed before and after each route. The experience was a paper form made digital: a long checklist that drivers blasted through in under 30 seconds.</p>
+    <p>Compliance rates looked fine. Trust was the problem. Fleet managers couldn&rsquo;t verify whether a driver actually walked around the vehicle or just tapped through from the driver&rsquo;s seat. A checked box only means something if someone actually looked.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================
+     ACT 1 — THE CHECKLIST
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Act 1 &mdash; The Checklist</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>Adding photographic evidence for fleet managers</h2>
+    <p>I integrated photo capture directly into the checklist: flag a defect, camera opens with specific instructions, photo attaches to the issue and ships to the fleet manager. First time they could actually see what the driver saw.</p>
+    <p>But photos only got taken when something was <em>wrong</em>. A clean inspection still looked identical to a skipped one.</p>
+  </div>
+</div>
+
+<!-- Act 1 screens — Select Issue → Camera → Confirmation → Report -->
+<div class="grid img-row" style="margin-top: clamp(24px, 3vh, 48px);">
+  <div class="col-1-6">
+    <div class="img-full"><img src="../assets/inspections/adding-photos.png" alt="DVIC photo addition flow — navigate to vehicle side, checklist with defects, camera capture, report with photo thumbnail"></div>
+  </div>
+</div>
+<div class="grid" style="margin-top: 12px;">
+  <div class="col-1-6 img-caption">Flag a defect, capture a photo with specific instructions, and the image attaches directly to the report for fleet managers.</div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================
+     ACT 2 — THE TUNNEL
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Act 2 &mdash; The Tunnel</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>A hardware solution enters the picture</h2>
+    <p>About a year and a half into my time on the team, Amazon invested in Automated Vehicle Inspection (AVI) tunnels &mdash; camera-equipped arches installed at delivery stations that scanned vehicles as they drove through. This was an entirely separate initiative from the checklist work, but it addressed the same core problem: how do you verify the condition of a vehicle without relying on a driver&rsquo;s word?</p>
+    <p>My role was designing the driver experience around the tunnel &mdash; what happens in the app before, during, and after the scan. Drivers would sometimes jump into their manual inspection before the automated scan had finished processing, then hit a dead end. I designed a gating flow that kept the two halves in sync, and a results screen that merged automated and manual findings into a single report.</p>
+  </div>
+</div>
+
+<!-- Act 2 — Tunnel illustrations carousel -->
+<div class="grid img-row" style="margin-top: clamp(24px, 3vh, 48px);">
+  <div class="col-2-5">
+    <div class="avi-carousel" id="aviCarousel">
+      <div class="avi-track">
+        <div class="avi-slide active"><img src="../assets/inspections/tunnel-inspections.png" alt="Real photo — Amazon Rivian van driving through the AVI inspection tunnel at a delivery station"></div>
+        <div class="avi-slide"><img src="../assets/inspections/image-01.png" alt="Illustration — Amazon van driving through the AVI inspection tunnel"></div>
+        <div class="avi-slide"><img src="../assets/inspections/image-02.png" alt="Illustration — AVI tunnel scanning panel, side view"></div>
+        <div class="avi-slide"><img src="../assets/inspections/image-03.png" alt="Illustration — vehicle parking flow after tunnel scan"></div>
+      </div>
+      <div class="avi-dots">
+        <button class="avi-dot active" data-idx="0"></button>
+        <button class="avi-dot" data-idx="1"></button>
+        <button class="avi-dot" data-idx="2"></button>
+        <button class="avi-dot" data-idx="3"></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="grid" style="margin-top: 12px;">
+  <div class="col-2-5 img-caption">The AVI tunnel: a camera-equipped arch scans the vehicle exterior as the driver passes through, then routes them to parking for the manual portion.</div>
+</div>
+
+<!-- Act 2 — App screens -->
+<div class="grid img-row" style="margin-top: var(--gutter);">
+  <div class="col-1-6">
+    <div class="img-full"><img src="../assets/inspections/AVI-screens.png" alt="AVI app flow — Did you drive through the tunnel? → Drive through now → Finish and park → Scan complete, start manual inspection"></div>
+  </div>
+</div>
+<div class="grid" style="margin-top: 12px;">
+  <div class="col-1-6 img-caption">The Rabbit app flow: confirm tunnel drive-through, wait for scan processing, then launch manual inspection for what the tunnel couldn't see.</div>
+</div>
+
+<!-- Act 2 — Jumbo wireframe: full flow + screens, edge to edge -->
+<div class="img-row" style="margin-top: clamp(32px, 4vh, 64px);">
+  <div class="zoomable" role="button" tabindex="0" aria-label="Zoom wireframe image" onclick="this.classList.toggle('zoomed')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.toggle('zoomed')}" title="Click to zoom">
+    <img src="../assets/inspections/AVI-flow.png" alt="Full Automated Vehicle Inspection flow — AVI scan, manual inspection screens, results overview, and completion states" />
+  </div>
+</div>
+<div class="grid" style="margin-top: 12px;">
+  <div class="col-1-6 img-caption">The complete post-route AVI flow: automated tunnel scan, manual inspection for interior items, combined results, and completion states — including iterations on the entry experience.</div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================
+     PULL QUOTE — insight that bridges Act 2 → Act 3
+     ============================================ -->
+<div class="grid pull-quote-block">
+  <div class="col-1-6">
+    <blockquote class="pull-quote">
+      If photos are the most valuable part of every inspection, why not make the photo the entire inspection?
+    </blockquote>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================
+     ACT 3 — THE VISION
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Act 3 &mdash; The Vision</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>Putting AI-powered inspections in every driver&rsquo;s hand</h2>
+    <p>The tunnel worked &mdash; but at enormous cost, and only at stations that had one. Most didn&rsquo;t. The real question: could we deliver the same quality of inspection through a phone, using AI, at a fraction of the price?</p>
+    <p>The concept: a guided camera walk-around that replaces both the checklist and the tunnel. The app directs drivers around the vehicle section by section with on-screen guides showing exactly how to frame each shot. AI validates each photo in real time. No infrastructure. No checkboxes. The future of the tunnel, in every driver&rsquo;s pocket.</p>
+  </div>
+</div>
+
+<!-- Act 3 — AI-guided capture: before/after pairs -->
+<div class="grid img-row">
+  <div class="col-1-6">
+    <div class="img-full"><img src="../assets/inspections/01-auto-image.png" alt="AR-guided photo capture — camera overlay with vehicle outline guides the driver into position, then confirms with a checkmark"></div>
+  </div>
+</div>
+<div class="grid" style="margin-top: 12px;">
+  <div class="col-1-6 img-caption">On-screen guides direct the driver into position. When aligned, the photo captures automatically.</div>
+</div>
+
+<div class="grid img-row" style="margin-top: var(--gutter);">
+  <div class="col-1-6">
+    <div class="img-full"><img src="../assets/inspections/02-auto-image.png" alt="Second angle — AR-guided capture from front-right position, showing alignment guides and confirmation"></div>
+  </div>
+</div>
+<div class="grid" style="margin-top: 12px;">
+  <div class="col-1-6 img-caption">Each angle follows the same pattern: outline guide &rarr; position &rarr; auto-capture &rarr; confirm.</div>
+</div>
+
+<!-- Act 3 — Real-time guidance callout -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Real-time guidance</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>Helping drivers understand what to do</h2>
+    <p>Line illustrations alone aren&rsquo;t enough &mdash; especially for drivers who&rsquo;ve never done a photo-based inspection. The app provides real-time directional prompts (&ldquo;Move back, down and right&rdquo;) that update as the driver repositions, paired with visual overlays showing exactly how to frame the vehicle. No guesswork, no training required &mdash; the phone tells you when you&rsquo;re in the right spot.</p>
+  </div>
+</div>
+
+<div class="grid img-row">
+  <div style="grid-column: 3 / 6;">
+    <img src="../assets/inspections/guidance.png" alt="Real-time directional prompt UI — Move back, down and right" style="width: 100%; height: auto; display: block; border-radius: 4px;" />
+  </div>
+</div>
+<div class="grid" style="margin-top: 12px;">
+  <div style="grid-column: 3 / 6;" class="img-caption">Directional prompts adjust dynamically as the driver moves, guiding them into the correct framing position for each vehicle angle.</div>
+</div>
+
+<!-- Act 3 — closing paragraph -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label" style="visibility: hidden;">-</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <p>The result: timestamped, geolocated photographic evidence of every vehicle angle, sent directly to the fleet portal. Consistent photo formats open the door for automated defect detection &mdash; turning every driver&rsquo;s phone into an AI-powered inspection station.</p>
+  </div>
+</div>
+
+<hr class="divider-heavy" style="margin-top: clamp(48px, 6vh, 80px);">
+
+<!-- ============================================
+     RESULTS
+     ============================================ -->
+<div class="grid results-block">
+  <!-- Header — label col 1-2, headline col 3-6 -->
+  <div class="col-1-2 results-rule">
+    <span class="section-label">Results</span>
+  </div>
+  <div class="col-3-6 results-rule">
+    <h2>Building trust into every inspection</h2>
+  </div>
+
+  <!-- Stats — each pair of columns -->
+  <div class="col-1-2 stat-cell">
+    <div class="number-lg">97%</div>
+    <div class="stat-label">inspection completion rate, up from 73%</div>
+  </div>
+  <div class="col-3-4 stat-cell">
+    <div class="number-lg">&lt;52s</div>
+    <div class="stat-label">average inspection time, down from 3.5+ minutes</div>
+  </div>
+  <div class="col-5-6 stat-cell">
+    <div class="number-lg">99%</div>
+    <div class="stat-label">completion rate with hand-held inspections</div>
+  </div>
+
+  <!-- Context — 2 columns of prose -->
+  <div class="col-1-3 results-context">
+    <p>The checklist photo addition gave fleet managers their first visual evidence of vehicle condition. The AVI tunnel integration automated what drivers were most likely to skip. And the photo-first concept represents the logical conclusion: if photos are the most valuable part of every inspection, make them the entire inspection.</p>
+  </div>
+  <div class="col-4-6 results-context">
+    <p>This project taught me that the best compliance tools don&rsquo;t feel like compliance. When you design an inspection that produces something genuinely useful &mdash; a visual record that protects drivers, fleet managers, and the company &mdash; people actually want to do it right.</p>
+  </div>
+</div>
+
+<!-- ============================================
+     NEXT PROJECT — card with image
+     ============================================ -->
+<div class="grid" style="padding-top: clamp(24px, 3vh, 48px);">
+  <div class="col-1-6 next-project">
+    <div class="grid" style="padding: 0;">
+      <div class="col-1-2">
+        <span class="next-project-label">Next Project</span>
+      </div>
+      <div class="col-3-6 next-project-content">
+        <div class="next-text">
+          <h3><a href="roll-aways.html">Preventing roll-aways &rarr;</a></h3>
+          <span class="next-meta">Amazon &mdash; Lead Product Designer</span>
+        </div>
+        <div class="next-img">
+          <img src="../assets/roll-aways/PPS-HERO.png" alt="Roll-away prevention system" style="width: 100%; height: auto; display: block; border-radius: 4px;">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>&copy; 2026 Daniel Hennessy</footer>
+
+<script>
+(function() {
+  var carousel = document.getElementById('aviCarousel');
+  if (!carousel) return;
+  var slides = carousel.querySelectorAll('.avi-slide');
+  var dots = carousel.querySelectorAll('.avi-dot');
+  var total = slides.length;
+  var current = 0;
+  var timer;
+
+  function goTo(idx) {
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = idx;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+  }
+
+  function next() { goTo((current + 1) % total); }
+
+  function startAuto() { timer = setInterval(next, 3500); }
+  function resetAuto() { clearInterval(timer); startAuto(); }
+
+  for (var i = 0; i < dots.length; i++) {
+    dots[i].addEventListener('click', function() {
+      goTo(parseInt(this.dataset.idx));
+      resetAuto();
+    });
+  }
+
+  startAuto();
+})();
+</script>
+
+</body>
+</html>

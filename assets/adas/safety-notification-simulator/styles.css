@@ -1,0 +1,570 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #000;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #e0e0e0;
+    line-height: 1.6;
+}
+
+/* Full-screen scene view (composite images — no layering needed) */
+.scene-view {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0a0a0a;
+    z-index: 1;
+}
+
+.scene-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.4s ease;
+}
+
+.scene-image-next {
+    opacity: 0;
+    z-index: 1;
+}
+
+/* Step indicator dots below the scene */
+.scene-step-indicator {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 101;
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.scene-step-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.scene-step-dot:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.scene-step-dot.active {
+    background: #6DCDFF;
+    border-color: #6DCDFF;
+    box-shadow: 0 0 6px rgba(109, 205, 255, 0.5);
+}
+
+/* Step label tooltip */
+.scene-step-label {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    pointer-events: none;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 101;
+}
+
+/* Full-screen vehicle background (legacy layered approach) */
+.vehicle-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0a0a0a;
+    background-image: url('./assets/windshield/street-view.png');
+    background-size: 100%;
+    background-position: center calc(-182% + -1000px);
+    background-repeat: no-repeat;
+    z-index: 1;
+}
+
+/* Vehicle overlay - transparent car interior on top */
+.vehicle-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('./assets/vehicles/rivian-interior.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    z-index: 20;
+}
+
+/* Floating Control Panel */
+.control-panel {
+    position: fixed;
+    top: 120px;
+    left: 20px;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 24px;
+    width: 336px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+    transition: all 0.3s ease;
+}
+
+.control-panel.minimized {
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 50%;
+    cursor: pointer;
+    background: #2a2a2a;
+    border: 2px solid #3a3a3a;
+}
+
+.control-panel.minimized .panel-header h1,
+.control-panel.minimized .panel-content {
+    display: none;
+}
+
+.control-panel.minimized .panel-header {
+    margin: 0;
+    padding: 0;
+    border: none;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-panel.minimized .minimize-btn {
+    position: static;
+    font-size: 20px;
+    color: #888;
+    background: transparent;
+    border: none;
+    min-width: auto;
+    height: auto;
+    padding: 0;
+}
+
+.control-panel.minimized .minimize-btn:hover {
+    background: transparent;
+    color: #aaa;
+}
+
+.control-panel.minimized .minimize-icon {
+    display: none;
+}
+
+.control-panel.minimized .minimize-btn::after {
+    content: "⚙";
+    font-size: 36px;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #444;
+}
+
+.control-panel h1 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: -0.3px;
+    color: #888;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.minimize-btn {
+    background: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    color: #e0e0e0;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    min-width: 36px;
+    height: 32px;
+}
+
+.minimize-btn:hover {
+    background: #333;
+    border-color: #444;
+}
+
+.minimize-icon {
+    font-weight: 300;
+    line-height: 1;
+}
+
+.control-group {
+    margin-bottom: 20px;
+}
+
+.control-group label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #aaa;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.control-group select {
+    width: 100%;
+    padding: 10px 12px;
+    background: #0a0a0a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.control-group select:hover:not(:disabled) {
+    border-color: #555;
+}
+
+.control-group select:focus {
+    outline: none;
+    border-color: #6DCDFF;
+    box-shadow: 0 0 0 3px rgba(109, 205, 255, 0.1);
+}
+
+.control-group select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Severity Buttons */
+.severity-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.severity-btn {
+    flex: 1;
+    padding: 10px 12px;
+    background: transparent;
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-size: 0.85rem;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.severity-btn:hover:not(:disabled) {
+    border-color: #777;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.severity-btn:focus {
+    outline: none;
+    border-color: #6DCDFF;
+    box-shadow: 0 0 0 3px rgba(109, 205, 255, 0.1);
+}
+
+.severity-btn:disabled {
+    opacity: 1;
+    cursor: not-allowed;
+    border-color: #444;
+    color: #666;
+    background: #1a1a1a;
+}
+
+.severity-btn.active {
+    background: #6DCDFF;
+    border-color: #6DCDFF;
+    color: #000;
+}
+
+.severity-btn.active:hover {
+    background: #8DD9FF;
+    border-color: #8DD9FF;
+}
+
+.reset-btn {
+    width: 100%;
+    padding: 10px;
+    background: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.reset-btn:hover {
+    background: #333;
+    border-color: #444;
+}
+
+.reset-btn:active {
+    transform: translateY(1px);
+}
+
+.audio-info {
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #0f0f0f;
+    border: 1px solid #2a2a2a;
+    border-radius: 4px;
+}
+
+.audio-info h3 {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #aaa;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.audio-info p {
+    font-size: 0.85rem;
+    color: #999;
+    line-height: 1.4;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Loading and error states */
+.loading-indicator,
+.error-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid #444;
+    border-radius: 8px;
+    z-index: 50;
+}
+
+.error-message {
+    background: rgba(139, 0, 0, 0.9);
+    border-color: #ff4444;
+}
+
+.loading-indicator p,
+.error-message p {
+    color: #fff;
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Tablet Surfaces - Alert overlay areas */
+.tablet-surface {
+    position: absolute;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Default screen images (always visible) */
+.default-screen-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    z-index: 1;
+}
+
+/* Driver Cluster (IC) - Left screen */
+.driver-cluster {
+    top: 39.4%;
+    left: 19.2%;
+    width: 30.1%;
+    height: 19.1%;
+}
+
+/* Center Console - Right large tablet */
+.center-console {
+    top: 48.2%;
+    left: 55%;
+    width: 40.9%;
+    height: 38%;
+    transform: perspective(1000px) rotateY(-6.5deg) rotateX(-0.5deg) rotateZ(6deg);
+    transform-origin: center center;
+}
+
+/* Alert Styles */
+.alert {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 10;
+}
+
+.alert.use-image {
+    padding: 0;
+    background: transparent;
+    border: none;
+    z-index: 10;
+}
+
+.alert.use-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.alert.use-video {
+    padding: 0;
+    background: transparent;
+    border: none;
+    z-index: 10;
+}
+
+.alert.use-video video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.alert-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.alert-title {
+    font-size: 1.3rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+}
+
+.alert-message {
+    font-size: 0.95rem;
+    font-weight: 300;
+    opacity: 0.9;
+}
+
+/* Severity-specific styles */
+.alert.mid {
+    background: transparent;
+    color: #fff;
+    border: none;
+}
+
+.alert.high {
+    background: transparent;
+    color: #fff;
+    border: none;
+    box-shadow: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .control-panel {
+        width: 240px;
+        font-size: 0.9rem;
+    }
+    
+    .control-panel h1 {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .control-panel {
+        width: 200px;
+        padding: 15px;
+    }
+}

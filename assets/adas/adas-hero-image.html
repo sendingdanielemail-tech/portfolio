@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADAS Sensor Coverage - Hero Image</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #cbd5e1;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(0.5rem, 2vw, 2rem);
+      overflow: hidden;
+    }
+    .device-frame {
+      width: 100%;
+      height: 100%;
+      max-width: 72rem;
+      max-height: 100%;
+      aspect-ratio: 16/9;
+      background: #1e293b;
+      border-radius: clamp(0.75rem, 2vw, 2rem);
+      padding: clamp(0.5rem, 1.5vw, 1.25rem);
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+      border: 1px solid #334155;
+      position: relative;
+    }
+    .notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: clamp(3rem, 8vw, 6rem);
+      height: 0.25rem;
+      background: #0f172a;
+      border-radius: 0 0 0.375rem 0.375rem;
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      border-top: none;
+    }
+    .screen {
+      width: 100%;
+      height: 100%;
+      background: #d4e8f5;
+      border-radius: clamp(0.375rem, 1vw, 0.75rem);
+      overflow: hidden;
+      border: 1px solid rgba(51, 65, 85, 0.8);
+    }
+    svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="device-frame">
+    <div class="notch"></div>
+    <div class="screen">
+      <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#7bafd4" stroke-width="0.5" opacity="0.44"/>
+          </pattern>
+          <pattern id="gridMajor" width="100" height="100" patternUnits="userSpaceOnUse">
+            <rect width="100" height="100" fill="url(#grid)"/>
+            <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#5a9bc7" stroke-width="1" opacity="0.33"/>
+          </pattern>
+        </defs>
+
+        <!-- Background with grid -->
+        <rect width="1600" height="900" fill="#d4e8f5"/>
+        <rect width="1600" height="900" fill="url(#gridMajor)"/>
+
+        <!-- Left Control Panel -->
+        <g>
+          <!-- Panel Background -->
+          <rect x="0" y="0" width="300" height="900" fill="#0f172a"/>
+          <!-- Right Border -->
+          <line x1="300" y1="0" x2="300" y2="900" stroke="#334155" stroke-width="2"/>
+
+          <!-- Header -->
+          <g transform="translate(20, 40)">
+            <text x="0" y="0" fill="#e2e8f0" font-size="16" font-weight="600" font-family="JetBrains Mono, monospace" letter-spacing="2">SENSOR CONTROLS</text>
+            <line x1="0" y1="10" x2="260" y2="10" stroke="#334155" stroke-width="1"/>
+          </g>
+
+          <!-- Detection Range Slider -->
+          <g transform="translate(20, 100)">
+            <text x="0" y="0" fill="#94a3b8" font-size="11" font-family="JetBrains Mono, monospace" letter-spacing="1">DETECTION RANGE</text>
+            <text x="260" y="0" fill="#06b6d4" font-size="11" font-weight="600" font-family="JetBrains Mono, monospace" text-anchor="end">13m</text>
+            <rect x="0" y="15" width="260" height="4" fill="#1e293b" rx="2"/>
+            <rect x="0" y="15" width="200" height="4" fill="#06b6d4" rx="2"/>
+            <circle cx="200" cy="17" r="7" fill="#06b6d4" stroke="#0f172a" stroke-width="2"/>
+          </g>
+
+          <!-- Sensitivity Slider -->
+          <g transform="translate(20, 170)">
+            <text x="0" y="0" fill="#94a3b8" font-size="11" font-family="JetBrains Mono, monospace" letter-spacing="1">SENSITIVITY</text>
+            <text x="260" y="0" fill="#0ea5e9" font-size="11" font-weight="600" font-family="JetBrains Mono, monospace" text-anchor="end">HIGH</text>
+            <rect x="0" y="15" width="260" height="4" fill="#1e293b" rx="2"/>
+            <rect x="0" y="15" width="220" height="4" fill="#0ea5e9" rx="2"/>
+            <circle cx="220" cy="17" r="7" fill="#0ea5e9" stroke="#0f172a" stroke-width="2"/>
+          </g>
+
+          <!-- Alert Threshold Slider -->
+          <g transform="translate(20, 240)">
+            <text x="0" y="0" fill="#94a3b8" font-size="11" font-family="JetBrains Mono, monospace" letter-spacing="1">ALERT THRESHOLD</text>
+            <text x="260" y="0" fill="#3b82f6" font-size="11" font-weight="600" font-family="JetBrains Mono, monospace" text-anchor="end">5m</text>
+            <rect x="0" y="15" width="260" height="4" fill="#1e293b" rx="2"/>
+            <rect x="0" y="15" width="100" height="4" fill="#3b82f6" rx="2"/>
+            <circle cx="100" cy="17" r="7" fill="#3b82f6" stroke="#0f172a" stroke-width="2"/>
+          </g>
+
+          <!-- Divider -->
+          <line x1="20" y1="300" x2="280" y2="300" stroke="#334155" stroke-width="1"/>
+
+          <!-- Toggle Switches Section -->
+          <g transform="translate(20, 330)">
+            <text x="0" y="0" fill="#94a3b8" font-size="11" font-family="JetBrains Mono, monospace" letter-spacing="1">SENSOR STATUS</text>
+          </g>
+
+          <!-- Front Cam Toggle -->
+          <g transform="translate(20, 370)">
+            <text x="0" y="0" fill="#cbd5e1" font-size="11" font-family="JetBrains Mono, monospace">FRONT CAM</text>
+            <rect x="200" y="-8" width="50" height="20" fill="#10b981" rx="10"/>
+            <circle cx="240" cy="2" r="8" fill="#e2e8f0"/>
+            <text x="260" y="0" fill="#10b981" font-size="10" font-weight="600" font-family="JetBrains Mono, monospace" text-anchor="end">ON</text>
+          </g>
+
+          <!-- Rear Cam Toggle -->
+          <g transform="translate(20, 420)">
+            <text x="0" y="0" fill="#cbd5e1" font-size="11" font-family="JetBrains Mono, monospace">REAR CAM</text>
+            <rect x="200" y="-8" width="50" height="20" fill="#10b981" rx="10"/>
+            <circle cx="240" cy="2" r="8" fill="#e2e8f0"/>
+            <text x="260" y="0" fill="#10b981" font-size="10" font-weight="600" font-family="JetBrains Mono, monospace" text-anchor="end">ON</text>
+          </g>
+
+          <!-- Side Sensors Toggle -->
+          <g transform="translate(20, 470)">
+            <text x="0" y="0" fill="#cbd5e1" font-size="11" font-family="JetBrains Mono, monospace">SIDE SENSORS</text>
+            <rect x="200" y="-8" width="50" height="20" fill="#10b981" rx="10"/>
+            <circle cx="240" cy="2" r="8" fill="#e2e8f0"/>
+            <text x="260" y="0" fill="#10b981" font-size="10" font-weight="600" font-family="JetBrains Mono, monospace" text-anchor="end">ON</text>
+          </g>
+
+          <!-- Divider -->
+          <line x1="20" y1="520" x2="280" y2="520" stroke="#334155" stroke-width="1"/>
+
+          <!-- Legend -->
+          <g transform="translate(20, 550)">
+            <text x="0" y="0" fill="#94a3b8" font-size="11" font-family="JetBrains Mono, monospace" letter-spacing="1">COVERAGE TYPES</text>
+
+            <rect x="0" y="20" width="12" height="12" fill="#06b6d4" fill-opacity="0.4" stroke="#06b6d4" stroke-width="1"/>
+            <text x="20" y="30" fill="#cbd5e1" font-size="10" font-family="JetBrains Mono, monospace">LIDAR / LONG RANGE</text>
+
+            <rect x="0" y="45" width="12" height="12" fill="#3b82f6" fill-opacity="0.4" stroke="#3b82f6" stroke-width="1"/>
+            <text x="20" y="55" fill="#cbd5e1" font-size="10" font-family="JetBrains Mono, monospace">REAR CAMERA</text>
+
+            <rect x="0" y="70" width="12" height="12" fill="#0ea5e9" fill-opacity="0.4" stroke="#0ea5e9" stroke-width="1"/>
+            <text x="20" y="80" fill="#cbd5e1" font-size="10" font-family="JetBrains Mono, monospace">ULTRASONIC / SHORT</text>
+
+            <rect x="0" y="95" width="12" height="12" fill="#8b5cf6" fill-opacity="0.4" stroke="#8b5cf6" stroke-width="1"/>
+            <text x="20" y="105" fill="#cbd5e1" font-size="10" font-family="JetBrains Mono, monospace">FRONT CAMERA</text>
+          </g>
+        </g>
+
+        <!-- Sensor Visualization Area -->
+        <g transform="translate(950, 450) scale(1.3)">
+
+          <!-- Front Wide LIDAR Cone -->
+          <path d="M 0,0 L -245.75,-86.82 A 260,260 0 0,1 245.75,-86.82 Z" fill="#06b6d4" fill-opacity="0.15" stroke="#06b6d4" stroke-width="1" stroke-opacity="0.6"/>
+          <!-- Front LIDAR distance arcs -->
+          <path d="M -94.55,-33.40 A 100,100 0 0,1 94.55,-33.40" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-opacity="0.7" stroke-dasharray="4,4"/>
+          <path d="M -151.28,-53.44 A 160,160 0 0,1 151.28,-53.44" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-opacity="0.7" stroke-dasharray="4,4"/>
+          <path d="M -245.75,-86.82 A 260,260 0 0,1 245.75,-86.82" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-opacity="0.7" stroke-dasharray="4,4"/>
+
+          <!-- NEW: Narrow Front Camera Cone (35 degrees) -->
+          <path d="M 0,0 L -79.21,-270.05 A 280,280 0 0,1 79.21,-270.05 Z" fill="#8b5cf6" fill-opacity="0.2" stroke="#8b5cf6" stroke-width="1.5" stroke-opacity="0.7"/>
+          <!-- Front camera distance arcs -->
+          <path d="M -28.29,-96.45 A 100,100 0 0,1 28.29,-96.45" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-opacity="0.8" stroke-dasharray="4,4"/>
+          <path d="M -45.26,-154.31 A 160,160 0 0,1 45.26,-154.31" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-opacity="0.8" stroke-dasharray="4,4"/>
+          <path d="M -73.62,-250.94 A 260,260 0 0,1 73.62,-250.94" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-opacity="0.8" stroke-dasharray="4,4"/>
+
+          <!-- Rear Camera Cone -->
+          <path d="M 0,0 L -199.32,166.77 A 260,260 0 0,0 199.32,166.77 Z" fill="#3b82f6" fill-opacity="0.15" stroke="#3b82f6" stroke-width="1" stroke-opacity="0.6"/>
+          <!-- Rear distance arcs -->
+          <path d="M -76.66,64.14 A 100,100 0 0,0 76.66,64.14" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-opacity="0.7" stroke-dasharray="4,4"/>
+          <path d="M -122.66,102.63 A 160,160 0 0,0 122.66,102.63" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-opacity="0.7" stroke-dasharray="4,4"/>
+          <path d="M -199.32,166.77 A 260,260 0 0,0 199.32,166.77" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-opacity="0.7" stroke-dasharray="4,4"/>
+
+          <!-- Right Side Sensor Cone (extended toward rear) -->
+          <path d="M 0,0 L 131.13,-91.76 A 160,160 0 0,1 90.1,133.2 Z" fill="#0ea5e9" fill-opacity="0.15" stroke="#0ea5e9" stroke-width="1" stroke-opacity="0.6"/>
+          <!-- Right distance arcs -->
+          <path d="M 81.92,-57.36 A 100,100 0 0,1 56.32,83.25" fill="none" stroke="#0ea5e9" stroke-width="1.5" stroke-opacity="0.7" stroke-dasharray="4,4"/>
+          <path d="M 131.07,-91.76 A 160,160 0 0,1 90.1,133.2" fill="none" stroke="#0ea5e9" stroke-width="1.5" stroke-opacity="0.7" stroke-dasharray="4,4"/>
+
+          <!-- Left Side Sensor Cone (extended toward rear) -->
+          <path d="M 0,0 L -90.1,133.2 A 160,160 0 0,1 -131.13,-91.76 Z" fill="#0ea5e9" fill-opacity="0.15" stroke="#0ea5e9" stroke-width="1" stroke-opacity="0.6"/>
+          <!-- Left distance arcs -->
+          <path d="M -56.32,83.25 A 100,100 0 0,1 -81.92,-57.36" fill="none" stroke="#0ea5e9" stroke-width="1.5" stroke-opacity="0.7" stroke-dasharray="4,4"/>
+          <path d="M -90.1,133.2 A 160,160 0 0,1 -131.07,-91.76" fill="none" stroke="#0ea5e9" stroke-width="1.5" stroke-opacity="0.7" stroke-dasharray="4,4"/>
+
+          <!-- Distance labels (Front) -->
+          <text x="0" y="-105" text-anchor="middle" fill="#475569" font-size="12" font-weight="500" font-family="JetBrains Mono, monospace">5m</text>
+          <text x="0" y="-165" text-anchor="middle" fill="#475569" font-size="12" font-weight="500" font-family="JetBrains Mono, monospace">8m</text>
+          <text x="0" y="-265" text-anchor="middle" fill="#475569" font-size="12" font-weight="500" font-family="JetBrains Mono, monospace">13m</text>
+
+          <!-- Distance labels (Rear) -->
+          <text x="0" y="115" text-anchor="middle" fill="#475569" font-size="12" font-weight="500" font-family="JetBrains Mono, monospace">5m</text>
+          <text x="0" y="175" text-anchor="middle" fill="#475569" font-size="12" font-weight="500" font-family="JetBrains Mono, monospace">8m</text>
+          <text x="0" y="275" text-anchor="middle" fill="#475569" font-size="12" font-weight="500" font-family="JetBrains Mono, monospace">13m</text>
+
+          <!-- Delivery Van -->
+          <g>
+            <!-- Van body -->
+            <rect x="-20" y="-50" width="40" height="100" fill="#1e293b" stroke="#0f172a" stroke-width="2" rx="4"/>
+            <!-- Van cab -->
+            <rect x="-17" y="-46" width="34" height="24" fill="#334155" stroke="#1e293b" stroke-width="1.5" rx="2"/>
+            <!-- Windshield -->
+            <rect x="-14" y="-42" width="28" height="10" fill="#3b82f6" stroke="#2563eb" stroke-width="1" opacity="0.9"/>
+            <!-- Roof details -->
+            <line x1="-10" y1="-10" x2="10" y2="-10" stroke="#64748b" stroke-width="2"/>
+            <line x1="-10" y1="0" x2="10" y2="0" stroke="#64748b" stroke-width="2"/>
+            <line x1="-10" y1="10" x2="10" y2="10" stroke="#64748b" stroke-width="2"/>
+            <line x1="-10" y1="20" x2="10" y2="20" stroke="#64748b" stroke-width="2"/>
+            <line x1="-10" y1="30" x2="10" y2="30" stroke="#64748b" stroke-width="2"/>
+            <!-- Side mirrors -->
+            <rect x="-24" y="-38" width="4" height="8" fill="#1e293b" stroke="#0f172a" stroke-width="1" rx="1"/>
+            <rect x="20" y="-38" width="4" height="8" fill="#1e293b" stroke="#0f172a" stroke-width="1" rx="1"/>
+            <!-- Wheels -->
+            <rect x="-22" y="-25" width="4" height="14" fill="#0f172a" rx="1"/>
+            <rect x="18" y="-25" width="4" height="14" fill="#0f172a" rx="1"/>
+            <rect x="-22" y="25" width="4" height="14" fill="#0f172a" rx="1"/>
+            <rect x="18" y="25" width="4" height="14" fill="#0f172a" rx="1"/>
+            <!-- Sensor Nodes -->
+            <circle cx="-20" cy="-50" r="3" fill="#06b6d4"/>
+            <circle cx="20" cy="-50" r="3" fill="#06b6d4"/>
+            <circle cx="-20" cy="50" r="3" fill="#06b6d4"/>
+            <circle cx="20" cy="50" r="3" fill="#06b6d4"/>
+            <circle cx="0" cy="-50" r="4" fill="#8b5cf6"/>
+            <circle cx="0" cy="50" r="3" fill="#06b6d4"/>
+            <circle cx="-20" cy="0" r="3" fill="#06b6d4"/>
+            <circle cx="20" cy="0" r="3" fill="#06b6d4"/>
+          </g>
+
+          <!-- Center indicator dot -->
+          <circle cx="0" cy="0" r="2" fill="#0284c7"/>
+        </g>
+
+        <!-- Top Header -->
+        <g transform="translate(340, 60)">
+          <text x="0" y="0" fill="#1e293b" font-size="20" font-weight="600" font-family="JetBrains Mono, monospace" letter-spacing="2">ADAS SENSOR COVERAGE</text>
+          <g transform="translate(0, 25)">
+            <circle cx="6" cy="-4" r="5" fill="#10b981"/>
+            <text x="20" y="0" fill="#10b981" font-size="14" font-weight="500" font-family="JetBrains Mono, monospace" letter-spacing="1">SYSTEM ACTIVE</text>
+          </g>
+        </g>
+
+        <!-- Top Right Info -->
+        <g transform="translate(1540, 60)">
+          <text x="0" y="0" fill="#475569" font-size="12" font-family="JetBrains Mono, monospace" text-anchor="end">LAT: 37.7749° N</text>
+          <text x="0" y="20" fill="#475569" font-size="12" font-family="JetBrains Mono, monospace" text-anchor="end">LNG: 122.4194° W</text>
+          <text x="0" y="40" fill="#475569" font-size="12" font-family="JetBrains Mono, monospace" text-anchor="end">SPD: 0.0 KM/H</text>
+          <text x="0" y="60" fill="#475569" font-size="12" font-family="JetBrains Mono, monospace" text-anchor="end">DIAG: OK</text>
+        </g>
+
+        <!-- System Monitor Label -->
+        <g transform="translate(1540, 870)">
+          <text x="0" y="0" fill="#475569" font-size="11" font-family="JetBrains Mono, monospace" text-anchor="end" letter-spacing="1">SYS.MONITOR v2.4</text>
+          <circle cx="8" cy="-3" r="4" fill="#10b981"/>
+        </g>
+
+        <!-- Bottom Scale Bar -->
+        <g transform="translate(340, 840)">
+          <line x1="0" y1="0" x2="200" y2="0" stroke="#475569" stroke-width="2"/>
+          <line x1="0" y1="-5" x2="0" y2="5" stroke="#475569" stroke-width="2"/>
+          <line x1="100" y1="-5" x2="100" y2="5" stroke="#475569" stroke-width="2"/>
+          <line x1="200" y1="-5" x2="200" y2="5" stroke="#475569" stroke-width="2"/>
+          <text x="0" y="-10" fill="#475569" font-size="10" font-family="JetBrains Mono, monospace" text-anchor="middle">0m</text>
+          <text x="100" y="-10" fill="#475569" font-size="10" font-family="JetBrains Mono, monospace" text-anchor="middle">5m</text>
+          <text x="200" y="-10" fill="#475569" font-size="10" font-family="JetBrains Mono, monospace" text-anchor="middle">10m</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>

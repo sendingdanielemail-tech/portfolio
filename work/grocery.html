@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Case study: Reinventing digital grocery shopping at Target. A 3-part initiative generating $244M+/month — tab redesign, My Usuals, and a data-driven refresh.">
+    <meta property="og:title" content="Reinventing Digital Grocery Shopping — Daniel Hennessy">
+    <meta property="og:description" content="Case study: Reinventing digital grocery shopping at Target. A 3-part initiative generating $244M+/month — tab redesign, My Usuals, and a data-driven refresh.">
+    <meta property="og:url" content="https://dhennessy.xyz/work/grocery.html">
+    <meta property="og:type" content="article">
+    <meta name="author" content="Daniel Hennessy">
+        <link rel="canonical" href="https://dhennessy.xyz/work/grocery.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<title>Reinventing Digital Grocery Shopping — Daniel Hennessy</title>
+<style>
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f5f0;
+    --red: #e63312;
+    --gray: #888;
+    --dark-gray: #555;
+    --rule: rgba(0, 0, 0, 0.05);
+    --rule-heavy: rgba(0, 0, 0, 0.05);
+    --margin: clamp(24px, 5vw, 80px);
+    --gutter: clamp(16px, 2vw, 24px);
+    --cols: 6;
+  }
+
+  body {
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    background-color: var(--white);
+    color: var(--black);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============================================
+     STRUCTURAL GRID — 6-column Brockmann system
+     ============================================ */
+  .grid-guides {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: var(--gutter);
+    padding: 0 var(--margin);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .grid-guides .col-guide {
+    border-left: 1px solid rgba(0, 0, 0, 0.05);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: 0 var(--gutter);
+    padding: 0 var(--margin);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Column span utilities */
+  .col-1-2 { grid-column: 1 / 3; }
+  .col-1-3 { grid-column: 1 / 4; }
+  .col-1-4 { grid-column: 1 / 5; }
+  .col-1-6 { grid-column: 1 / -1; }
+  .col-2-5 { grid-column: 2 / 6; }
+  .col-2-6 { grid-column: 2 / -1; }
+  .col-3-6 { grid-column: 3 / -1; }
+  .col-3-4 { grid-column: 3 / 5; }
+  .col-4-6 { grid-column: 4 / -1; }
+  .col-5-6 { grid-column: 5 / -1; }
+
+  /* ============================================
+     NAV
+     ============================================ */
+  nav {
+    padding: var(--margin);
+    padding-bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    position: relative;
+    z-index: 1;
+  }
+  nav .name {
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  nav .name a {
+    color: var(--black);
+    text-decoration: none;
+  }
+  nav .back {
+    font-size: 13px;
+    color: var(--gray);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  nav .back:hover { color: var(--black); }
+
+  /* ============================================
+     CASE STUDY HEADER
+     ============================================ */
+  .cs-header {
+    padding-top: clamp(60px, 10vh, 120px);
+    padding-bottom: clamp(40px, 6vh, 80px);
+    align-items: end;
+  }
+  .cs-header .number {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--red);
+    text-transform: uppercase;
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .cs-header .header-content h1 {
+    font-size: clamp(36px, 5.5vw, 72px);
+    font-weight: 900;
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    max-width: 18ch;
+  }
+  .cs-header .header-content .lede {
+    margin-top: 24px;
+    font-size: clamp(17px, 2vw, 22px);
+    line-height: 1.5;
+    color: var(--dark-gray);
+    max-width: 48ch;
+  }
+
+  /* ============================================
+     META BAR
+     ============================================ */
+  .meta-bar {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    border-top: 1px solid var(--rule-heavy);
+    border-bottom: 1px solid var(--rule-heavy);
+  }
+  .meta-bar dt {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    margin-bottom: 6px;
+  }
+  .meta-bar dd {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* ============================================
+     HERO IMAGE
+     ============================================ */
+  .cs-hero {
+    margin-top: clamp(32px, 5vh, 64px);
+  }
+  .cs-hero .hero-img {
+    overflow: hidden;
+    border-radius: 4px;
+  }
+  .cs-hero .hero-img img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* ============================================
+     SECTION BLOCKS — label in col 1-2, content in 3-6
+     ============================================ */
+  .section-block {
+    padding-top: clamp(48px, 6vh, 96px);
+    padding-bottom: clamp(48px, 6vh, 96px);
+  }
+  .section-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .section-content h2 {
+    font-size: clamp(24px, 2.8vw, 34px);
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  .section-content p {
+    font-size: 16px;
+    line-height: 1.75;
+    color: #444;
+    margin-bottom: 16px;
+    max-width: 58ch;
+  }
+
+  /* ============================================
+     DIVIDERS
+     ============================================ */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 0 var(--margin);
+  }
+  .divider-heavy {
+    border: none;
+    border-top: 1px solid var(--rule-heavy);
+    margin: 0 var(--margin);
+  }
+
+  /* ============================================
+     PULL QUOTE
+     ============================================ */
+  .pull-quote-block {
+    padding-top: clamp(48px, 6vh, 80px);
+    padding-bottom: clamp(48px, 6vh, 80px);
+  }
+  .pull-quote {
+    font-size: clamp(24px, 3.2vw, 42px);
+    font-weight: 900;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--black);
+    margin: 0;
+    padding: 0 0 0 clamp(16px, 2vw, 24px);
+    position: relative;
+    -webkit-margin-start: 0;
+    -webkit-margin-end: 0;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+  }
+  .pull-quote::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 3px;
+    background: var(--red);
+  }
+  .pull-quote .pq-attribution {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--gray);
+    margin-top: 16px;
+  }
+
+  /* ============================================
+     IMAGE LAYOUTS
+     ============================================ */
+  .img-full {
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .img-full img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .img-half {
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .img-half img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .img-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .img-caption {
+    font-size: 12px;
+    color: var(--gray);
+    margin-top: 10px;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+  }
+
+  /* Zoomable image — click to toggle 2x, scrollable when zoomed */
+  .zoomable {
+    overflow: hidden;
+    cursor: zoom-in;
+    border-radius: 2px;
+    transition: max-height 0.3s ease;
+  }
+  .zoomable img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease;
+    transform-origin: top left;
+  }
+  .zoomable.zoomed {
+    overflow: auto;
+    cursor: zoom-out;
+  }
+  .zoomable.zoomed img {
+    transform: scale(2);
+  }
+  .img-row { margin-top: var(--gutter); }
+  .img-row:first-child { margin-top: 0; }
+
+  /* Part header — strong visual break between the 3 project parts */
+  .part-header {
+    background: var(--black);
+    color: var(--white);
+    padding: clamp(48px, 7vh, 96px) 0;
+    position: relative;
+    z-index: 1;
+    margin-top: clamp(48px, 6vh, 80px);
+  }
+  .part-header .part-number {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--red);
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .part-header h2 {
+    font-size: clamp(28px, 3.5vw, 48px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--white);
+  }
+  .part-header .part-lede {
+    margin-top: 16px;
+    font-size: clamp(15px, 1.6vw, 18px);
+    line-height: 1.6;
+    color: var(--gray);
+    max-width: 48ch;
+  }
+
+  /* ============================================
+     RESULTS SECTION
+     ============================================ */
+  .results-block {
+    padding-top: clamp(48px, 6vh, 80px);
+    padding-bottom: clamp(48px, 6vh, 80px);
+  }
+  .results-rule {
+    padding-bottom: clamp(32px, 4vh, 56px);
+  }
+  .results-block h2 {
+    font-size: clamp(24px, 2.8vw, 34px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+  .stat-cell {
+    padding: clamp(24px, 3vw, 40px) 0;
+    border-bottom: 1px solid var(--rule-heavy);
+  }
+  .stat-cell .number-lg {
+    font-size: clamp(40px, 5.5vw, 64px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--black);
+    line-height: 1;
+  }
+  .stat-cell .stat-label {
+    font-size: 13px;
+    margin-top: 8px;
+    color: var(--red);
+    line-height: 1.5;
+  }
+  .results-context {
+    margin-top: clamp(32px, 4vh, 48px);
+  }
+  .results-context p {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #444;
+    margin-bottom: 12px;
+  }
+  .results-context strong {
+    color: var(--black);
+  }
+
+  /* ============================================
+     NEXT PROJECT
+     ============================================ */
+  .next-project {
+    padding: clamp(48px, 6vh, 80px) 0;
+    border-top: 1px solid var(--rule-heavy);
+  }
+  .next-project-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gray);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .next-project-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gutter);
+  }
+  .next-project-content .next-text h3 {
+    font-size: clamp(24px, 3vw, 38px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .next-project-content .next-text h3 a {
+    color: var(--black);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .next-project-content .next-text h3 a:hover { color: var(--red); }
+  .next-project-content .next-text .next-meta {
+    font-size: 13px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ============================================
+     FOOTER
+     ============================================ */
+  footer {
+    padding: 32px var(--margin);
+    font-size: 12px;
+    color: var(--gray);
+    letter-spacing: 0.04em;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ============================================
+     RESPONSIVE
+     ============================================ */
+  @media (max-width: 768px) {
+    :root { --cols: 1; }
+
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .col-1-2, .col-1-3, .col-1-4, .col-1-6,
+    .col-2-5, .col-2-6, .col-3-6, .col-3-4,
+    .col-4-6, .col-5-6 {
+      grid-column: 1 / -1;
+    }
+
+    .grid-guides { display: none; }
+
+    .meta-bar.grid {
+      grid-template-columns: 1fr 1fr;
+      row-gap: 20px;
+    }
+
+    .next-project-content {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Keyboard focus indicators (accessibility) */
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  *:focus { outline: none; }  /* Remove default only when :focus-visible is supported */
+
+</style>
+</head>
+<body>
+
+<!-- STRUCTURAL GRID GUIDES -->
+<div class="grid-guides" aria-hidden="true">
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="name"><a href="../index.html">Daniel Hennessy</a></div>
+  <a class="back" href="../index.html">&larr; All Projects</a>
+</nav>
+
+<!-- ============================================
+     HEADER
+     ============================================ -->
+<div class="grid cs-header">
+  <div class="col-1-2">
+    <span class="number">Case Study 04</span>
+  </div>
+  <div class="col-3-6 header-content">
+    <h1>Reinventing digital grocery shopping</h1>
+    <p class="lede">Led the design of Target's digital grocery experience across three connected initiatives — from a new shopping tab to personalized reordering to a full design refresh — generating $244M+/month in revenue.</p>
+  </div>
+</div>
+
+<!-- META BAR -->
+<div class="grid meta-bar">
+  <dl class="col-1-2">
+    <dt>Role</dt>
+    <dd>Lead Product Designer</dd>
+  </dl>
+  <dl class="col-3-4">
+    <dt>Company</dt>
+    <dd>Target Digital</dd>
+  </dl>
+  <dl class="col-5-6">
+    <dt>Duration</dt>
+    <dd>2020 &ndash; 2023</dd>
+  </dl>
+</div>
+
+<!-- HERO IMAGE — full experience flow -->
+<div class="grid cs-hero">
+  <div class="col-1-6 hero-img">
+    <img src="../assets/grocery/07-full-experience.png" alt="Full flow of the redesigned Target digital grocery experience showing tab navigation, personalized carousels, and fulfillment selection">
+  </div>
+</div>
+
+
+<!-- ============================================================
+     ====================== PART 1 =============================
+     ============================================================ -->
+
+<!-- ============================================
+     SITUATION — Part 1: Tab Redesign
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Situation</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>Grocery lived inside a list-making tool</h2>
+    <p>When I joined Target's basket-building squad in January 2020, digital grocery was buried inside a confusing list-making interface. Users had to work hard to find modern fulfillment services like Pickup and Delivery, and there was no cold storage for pickup orders — meaning fresh and frozen items couldn't be sold through the fastest fulfillment channel.</p>
+    <p>My hypothesis was that shopping for frequency items using Pickup and Delivery should be easy, personalized, and elevated within the app — not hidden behind a legacy tool. I created a vision for a dedicated grocery tab focused entirely on fulfillment-first shopping. Leadership was skeptical; they'd invested years in the existing experience. Then March 2020 happened, and everything changed overnight.</p>
+  </div>
+</div>
+
+<!-- Wireframes showing 4 fulfillment approaches -->
+<div class="grid img-row">
+  <div class="col-3-6">
+    <div class="img-full">
+      <img src="../assets/grocery/01-Tab-2-fulfillment-choice-wires.png" alt="Four wireframe approaches for fulfillment selection: front door, sheet, large tiles, and segment">
+    </div>
+    <div class="img-caption">Four directions for the fulfillment selection pattern — from a full-screen "front door" to a segment control that defaults to a shopping mode. Each tested a different level of commitment from the user.</div>
+  </div>
+</div>
+
+<hr class="divider" style="margin-top: clamp(48px, 6vh, 80px);">
+
+<!-- ============================================
+     ACTION — Part 1: Tab Redesign
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Action</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>A clear question before anything else</h2>
+    <p>I led multiple design charrettes to break through skepticism and build alignment across teams. The key insight was simple: start by asking users how they want to shop. "How are you shopping today?" became the front door — Picking Up, Same Day Delivery, or Making a List. Once a user chooses, every item shown is available and eligible for that fulfillment method. No guessing, no disappointment at checkout.</p>
+    <p>I partnered with the personalization team to create an algorithm that prioritized items by repurchase likelihood. Categories (carousels) are sorted by what you're most likely to buy again, and items within each carousel follow the same logic. The result is contextual discovery — familiar buy-again items blended with personalized recommendations, all within a fulfillment method the user has already committed to.</p>
+  </div>
+</div>
+
+<!-- Fulfillment navigation composite -->
+<div class="grid img-row">
+  <div class="col-1-6">
+    <div class="img-full">
+      <img src="../assets/grocery/04-updating-shopping-type.png" alt="Simple fulfillment navigation — the shop view alongside the fulfillment selection sheet showing Picking up, Same Day Delivery, and Making a List">
+    </div>
+    <div class="img-caption">The fulfillment-first approach in action: the shop view with personalized carousels, alongside the bottom sheet that lets users switch methods at any point without losing their cart.</div>
+  </div>
+</div>
+
+<!-- Carousels + weeknight combos (combined) -->
+<div class="grid img-row">
+  <div class="col-1-6">
+    <div class="img-full">
+      <img src="../assets/grocery/05-and-06.png" alt="Personalized carousels showing all available and eligible items alongside easy weeknight meal combo collections">
+    </div>
+    <div class="img-caption">Every item shown is available and eligible for your chosen fulfillment method. Easy combo collections simplify meal planning for busy families.</div>
+  </div>
+</div>
+
+<!-- Pull quote for Part 1 -->
+<div class="grid pull-quote-block">
+  <blockquote class="col-1-6 pull-quote">
+    Start by asking how someone wants to shop — then make every item on the page available that way.
+  </blockquote>
+</div>
+
+<hr class="divider-heavy">
+
+<!-- ============================================
+     RESULTS — Part 1
+     ============================================ -->
+<div class="grid results-block">
+  <div class="col-1-2 results-rule">
+    <span class="section-label">Results</span>
+  </div>
+  <div class="col-3-6 results-rule">
+    <h2>An instant platform for growth</h2>
+  </div>
+
+  <div class="col-1-2 stat-cell">
+    <div class="number-lg">$244M+</div>
+    <div class="stat-label">Monthly revenue through the tab</div>
+  </div>
+  <div class="col-3-4 stat-cell">
+    <div class="number-lg">23%</div>
+    <div class="stat-label">Of all app orders placed through the tab</div>
+  </div>
+  <div class="col-5-6 stat-cell">
+    <div class="number-lg">$2.9B+</div>
+    <div class="stat-label">Annualized revenue from projects led</div>
+  </div>
+
+  <div class="col-1-3 results-context">
+    <p>The tab launched in June 2020 and gained millions of users immediately. It became the foundational platform for all digital grocery features — every subsequent initiative, including My Usuals and the design refresh, was built on top of this experience.</p>
+  </div>
+  <div class="col-4-6 results-context">
+    <p>Usage has been relentlessly growing since launch. The fulfillment-first approach meant users weren't just browsing — they were shopping with intent, leading to higher conversion and larger baskets than any previous grocery entry point in the app.</p>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     ====================== PART 2 =============================
+     ============================================================ -->
+
+<!-- ============================================================
+     PART 2 HEADER — My Usuals
+     ============================================================ -->
+<div class="part-header">
+  <div class="grid">
+    <div class="col-1-2">
+      <div class="part-number">Part 2</div>
+    </div>
+    <div class="col-3-6">
+      <h2>My Usuals</h2>
+      <p class="part-lede">Target had tried item subscriptions and it failed. Users kept canceling because the cadence was never right. I took the initial motivation — not wanting to forget your staples — and solved it fresh.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     ACTION — Part 2: My Usuals
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Action</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>A one-tap reorder list that learns from you</h2>
+    <p>I ran moderated interviews to understand why users started and later cancelled subscriptions — the pattern was always the same: subscribe, find the cadence imperfect, see the same items on sale in-store, cancel. The insight: "usual" items should be easily accessible within the context of all your buy-again items, not locked into a rigid delivery schedule.</p>
+    <p>I wrote a pitch (inspired by Shape Up), started sketching, and focused on simplicity. The core flow: a personalized call-to-action within the To Go tab surfaces thumbnail previews of your most-purchased items. Tapping "Set up My Usuals" opens an algorithmic starter list — items pre-selected based on purchase frequency and preference. Users refine from there, and adding everything to cart is a single tap.</p>
+  </div>
+</div>
+
+<!-- Early sketches — right 3 columns -->
+<div class="grid img-row">
+  <div class="col-4-6">
+    <div class="img-label">Early sketches</div>
+    <div class="img-full">
+      <img src="../assets/grocery/02-my-usuals.png" alt="Hand-drawn sketches of My Usuals concept — compact widget with thumbnail previews, expandable detail view">
+    </div>
+    <div class="img-caption">Initial pen-and-paper sketches exploring the widget format — a compact preview that expands into a full management view.</div>
+  </div>
+</div>
+
+<!-- Wireframe flow — full width, zoomable -->
+<div class="grid img-row">
+  <div class="col-1-6">
+    <div class="img-label">Wireframe flow</div>
+    <div class="zoomable" role="button" tabindex="0" aria-label="Zoom wireframe image" onclick="this.classList.toggle('zoomed')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.toggle('zoomed')}">
+      <img src="../assets/grocery/03-usuals-wireframes.png" alt="Five-step wireframe flow: call to action, setup, ready to add, view items, successfully added">
+    </div>
+    <div class="img-caption">The five-step flow: discover the CTA, build your list from an algorithmic starter set, review, add all to cart, done. Click to zoom.</div>
+  </div>
+</div>
+
+<!-- Full screens -->
+<div class="grid img-row">
+  <div class="col-1-6">
+    <div class="img-full">
+      <img src="../assets/grocery/06-full-screens.png" alt="Complete My Usuals flow — five screens from call to action through setup, usuals ready, management, and bulk ordering">
+    </div>
+    <div class="img-caption">The complete My Usuals experience: from the in-tab call to action, through setup and curation, to one-tap bulk ordering.</div>
+  </div>
+</div>
+
+<hr class="divider-heavy" style="margin-top: clamp(48px, 6vh, 80px);">
+
+<!-- ============================================
+     RESULTS — Part 2
+     ============================================ -->
+<div class="grid results-block">
+  <div class="col-1-2 results-rule">
+    <span class="section-label">Results</span>
+  </div>
+  <div class="col-3-6 results-rule">
+    <h2>Highest average order value in the app</h2>
+  </div>
+
+  <div class="col-1-2 stat-cell">
+    <div class="number-lg">125K</div>
+    <div class="stat-label">Monthly orders, exceeding 114K goal</div>
+  </div>
+  <div class="col-3-4 stat-cell">
+    <div class="number-lg">$81.60</div>
+    <div class="stat-label">AOV — highest ever, vs. $57.60 app average</div>
+  </div>
+  <div class="col-5-6 stat-cell">
+    <div class="number-lg">0</div>
+    <div class="stat-label">Promotional spend at launch</div>
+  </div>
+
+  <div class="col-1-3 results-context">
+    <p>My Usuals exceeded its monthly order goal with zero promotional effort — users found it organically through the To Go tab. The average order value of $81.60 was the highest in the app, far exceeding both the app average of $57.60 and the previous List AOV goal of $62.15.</p>
+  </div>
+  <div class="col-4-6 results-context">
+    <p>The feature proved the hypothesis: when you make it easy for people to reorder their staples with a single tap, they build bigger baskets. Users weren't subscribing to a cadence — they were shopping on their own terms, which turned out to be far more effective.</p>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     ====================== PART 3 =============================
+     ============================================================ -->
+
+<!-- ============================================================
+     PART 3 HEADER — Design Refresh
+     ============================================================ -->
+<div class="part-header">
+  <div class="grid">
+    <div class="col-1-2">
+      <div class="part-number">Part 3</div>
+    </div>
+    <div class="col-3-6">
+      <h2>Design refresh</h2>
+      <p class="part-lede">After the tab and My Usuals were live long enough to generate meaningful data, the story was clear: ~93% of revenue came from the simplest carousels. Users wanted to buy the same things easily — everything else was noise.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     SITUATION — Part 3
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Situation</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>Data pointed toward radical simplicity</h2>
+    <p>I assembled all research and analytics around the experience. Roughly 93% of revenue came from the simplest buy-again carousels, while only about 7% came from features like My Usuals and recommendations. I led a dedicated research effort with moderated sessions, rank-order exercises, and open-ended feedback. The rank-order data confirmed it: "buying the same things easily" scored all 5s. Discovering new items ranked lowest.</p>
+    <p>This gave us a clear framework for what to invest in and what to let go of — and the confidence to make big structural moves rather than incremental tweaks.</p>
+  </div>
+</div>
+
+<!-- Research + charrettes -->
+<div class="grid img-row">
+  <div class="col-1-3">
+    <div class="img-label">User journey mapping</div>
+    <div class="img-half">
+      <img src="../assets/grocery/01-research-insights.png" alt="Sketched user journey showing how users navigate to the grocery tab — most simply use search">
+    </div>
+    <div class="img-caption">Research showed that many users simply use search — they weren't even discovering the tab's curated experience.</div>
+  </div>
+  <div class="col-4-6">
+    <div class="img-label">Design charrettes</div>
+    <div class="img-half">
+      <img src="../assets/grocery/02-process.png" alt="Working session with sticky notes — design charrettes co-led with skeptical Discover tab partners">
+    </div>
+    <div class="img-caption">I co-led focused design charrettes with Discover tab partners, turning skepticism into shared ownership.</div>
+  </div>
+</div>
+
+<hr class="divider" style="margin-top: clamp(48px, 6vh, 80px);">
+
+<!-- ============================================
+     ACTION — Part 3: Design Refresh
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Action</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>Focused on what users care about, let go of everything else</h2>
+    <p>I distilled the research into six prioritized user problems, each backed by data and a specific hypothesis. The biggest: many users didn't even know the tab existed. Second: confusion between Usuals, buy-again, and recommendations. I mapped each problem to a concrete UI solution — every design decision traced directly back to a validated user need.</p>
+    <p>The approach was atomic: I started by listing every element the refresh would touch, sketched individual components, then assembled them into full layouts through iterative rounds of collaboration and testing. The final design introduced clearer naming, "You might need these" reminders for items not bought recently, out-of-stock substitutes, and a dedicated personalized discovery section.</p>
+  </div>
+</div>
+
+<!-- Mapping elements — right 3 columns -->
+<div class="grid img-row">
+  <div class="col-4-6">
+    <div class="img-label">Mapping elements</div>
+    <div class="img-full">
+      <img src="../assets/grocery/05-elements.png" alt="Handwritten inventory of every UI element impacted by the refresh">
+    </div>
+    <div class="img-caption">Every element the refresh would touch — from front door to carousels to toggles — listed across current and proposed states.</div>
+  </div>
+</div>
+
+<!-- Atomic design & sketching — full width -->
+<div class="grid img-row">
+  <div class="col-1-6">
+    <div class="img-label">Atomic design &amp; sketching</div>
+    <div class="img-full">
+      <img src="../assets/grocery/06-atoms.png" alt="Atomic design sketches — individual components like search bars, toggles, cards, and navigation elements">
+    </div>
+    <div class="img-caption">Sketch individual components first, then compose them into screens. Every element had to earn its place.</div>
+  </div>
+</div>
+
+<!-- Assembling the puzzle -->
+<div class="grid img-row">
+  <div class="col-1-6">
+    <div class="img-full">
+      <img src="../assets/grocery/07-puzzle-pieces.png" alt="Assembling the puzzle — dozens of hand-drawn wireframe iterations showing how components come together into full screen layouts">
+    </div>
+    <div class="img-caption">Dozens of iterations exploring how atomic components compose into full screen layouts — variations of navigation, content hierarchy, and reorder flows.</div>
+  </div>
+</div>
+
+<!-- Annotations — research mapped to UI -->
+<div class="grid img-row">
+  <div class="col-1-6">
+    <div class="img-full">
+      <img src="../assets/grocery/08-annotations.png" alt="Annotated UI showing how each design element maps back to a specific user problem identified in research">
+    </div>
+    <div class="img-caption">Every element in the final design maps directly to a prioritized user problem. Research guided the decisions — not assumptions, not stakeholder preferences.</div>
+  </div>
+</div>
+
+<!-- Buy again + personalized discovery — combined view -->
+<div class="grid img-row">
+  <div class="col-1-6">
+    <div class="img-label">The refreshed experience</div>
+    <div class="img-full">
+      <img src="../assets/grocery/two-tabs.png" alt="Two views of the refreshed experience — a simple buy-it-again view alongside personalized discovery with smart recommendations">
+    </div>
+    <div class="img-caption">The two core modes: a simple buy-it-again view highlighting products guests buy most often, alongside personalized discovery with smart recommendations based on purchase history.</div>
+  </div>
+</div>
+
+<!-- Pull quote for Part 3 -->
+<div class="grid pull-quote-block">
+  <blockquote class="col-1-6 pull-quote">
+    93% of revenue came from the simplest experience. Focus on what users care about — let go of everything else.
+  </blockquote>
+</div>
+
+<hr class="divider-heavy">
+
+<!-- ============================================
+     RESULTS — Part 3
+     ============================================ -->
+<div class="grid results-block">
+  <div class="col-1-2 results-rule">
+    <span class="section-label">Results</span>
+  </div>
+  <div class="col-3-6 results-rule">
+    <h2>Targeting $6B annually</h2>
+  </div>
+
+  <div class="col-1-2 stat-cell">
+    <div class="number-lg">50%</div>
+    <div class="stat-label">Target: app orders through the tab (up from 23%)</div>
+  </div>
+  <div class="col-3-4 stat-cell">
+    <div class="number-lg">$500M</div>
+    <div class="stat-label">Monthly revenue goal (~$6B/year)</div>
+  </div>
+  <div class="col-5-6 stat-cell">
+    <div class="number-lg">6</div>
+    <div class="stat-label">Prioritized user problems addressed</div>
+  </div>
+
+  <div class="col-1-3 results-context">
+    <p>The design refresh was built as an A/B test against the existing experience, with a multivariate test for naming and iconography. The goal was ambitious: double the tab's share of app orders from 23% to 50%, and push monthly revenue from $244M to $500M — roughly $6B annually.</p>
+  </div>
+  <div class="col-4-6 results-context">
+    <p>Every design decision in the refresh was traceable to a specific user problem validated through research. This wasn't a visual polish — it was a structural reorganization driven by data, built on the platform established by the original tab launch two years earlier.</p>
+  </div>
+</div>
+
+<!-- ============================================
+     NEXT PROJECT
+     ============================================ -->
+<div class="grid" style="padding-top: clamp(24px, 3vh, 48px);">
+  <div class="col-1-6 next-project">
+    <div class="grid" style="padding: 0;">
+      <div class="col-1-2">
+        <span class="next-project-label">Next Project</span>
+      </div>
+      <div class="col-3-6 next-project-content">
+        <div class="next-text">
+          <h3><a href="five-smart-friends.html">Building a decision-making tool with AI &rarr;</a></h3>
+          <span class="next-meta">Personal &middot; AI</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>&copy; 2026 Daniel Hennessy</footer>
+
+</body>
+</html>

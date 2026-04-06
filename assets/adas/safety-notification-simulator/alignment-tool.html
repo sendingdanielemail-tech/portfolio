@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Center Console Alignment Tool</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #vehicle-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+        }
+        
+        #vehicle-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('./assets/vehicles/rivian-interior.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: 20;
+        }
+        
+        #center-console {
+            position: absolute;
+            border: 3px solid lime;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #center-console img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        #controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.95);
+            padding: 20px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #fff;
+            z-index: 100;
+            max-height: 90vh;
+            overflow-y: auto;
+            width: 300px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        
+        .control-group input {
+            width: 100%;
+            padding: 5px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 4px;
+        }
+        
+        .value-display {
+            display: inline-block;
+            margin-left: 10px;
+            color: #ffcc00;
+            font-weight: bold;
+        }
+        
+        #css-output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #0f0;
+            white-space: pre-wrap;
+            word-break: break-all;
+            user-select: all;
+        }
+        
+        h4 {
+            margin: 20px 0 10px 0;
+            color: #ffcc00;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="vehicle-container">
+        <div id="center-console">
+            <img src="./assets/screens/center-console/Rivian-tablet-view.png" alt="Center console">
+        </div>
+        <div id="vehicle-overlay"></div>
+    </div>
+    
+    <div id="controls">
+        <h3 style="margin-top: 0;">Center Console Alignment</h3>
+        
+        <div class="control-group">
+            <label>Top (%)<span class="value-display" id="top-val">52</span></label>
+            <input type="range" id="top" min="0" max="100" step="0.1" value="52">
+        </div>
+        
+        <div class="control-group">
+            <label>Left (%)<span class="value-display" id="left-val">60</span></label>
+            <input type="range" id="left" min="0" max="100" step="0.1" value="60">
+        </div>
+        
+        <div class="control-group">
+            <label>Width (%)<span class="value-display" id="width-val">31</span></label>
+            <input type="range" id="width" min="10" max="50" step="0.1" value="31">
+        </div>
+        
+        <div class="control-group">
+            <label>Height (%)<span class="value-display" id="height-val">20</span></label>
+            <input type="range" id="height" min="10" max="40" step="0.1" value="20">
+        </div>
+        
+        <div class="control-group">
+            <label>Rotate Y (deg)<span class="value-display" id="rotateY-val">-15</span></label>
+            <input type="range" id="rotateY" min="-30" max="30" step="0.5" value="-15">
+        </div>
+        
+        <div class="control-group">
+            <label>Rotate X (deg)<span class="value-display" id="rotateX-val">5</span></label>
+            <input type="range" id="rotateX" min="-30" max="30" step="0.5" value="5">
+        </div>
+        
+        <div class="control-group">
+            <label>Rotate Z (deg)<span class="value-display" id="rotateZ-val">0</span></label>
+            <input type="range" id="rotateZ" min="-30" max="30" step="0.5" value="0">
+        </div>
+        
+        <div class="control-group">
+            <label>Perspective (px)<span class="value-display" id="perspective-val">800</span></label>
+            <input type="range" id="perspective" min="200" max="2000" step="50" value="800">
+        </div>
+        
+        <button onclick="copyCSS()">Done - Tell Kiro These Values</button>
+        
+        <h4>Final CSS Values:</h4>
+        <div id="css-output"></div>
+        
+        <p style="font-size: 11px; color: #888; margin-top: 10px;">
+            Adjust the sliders until the green box matches the red outline perfectly. 
+            When done, click the button above and paste the values in chat.
+        </p>
+    </div>
+    
+    <script>
+        const centerConsole = document.getElementById('center-console');
+        const inputs = {
+            top: document.getElementById('top'),
+            left: document.getElementById('left'),
+            width: document.getElementById('width'),
+            height: document.getElementById('height'),
+            rotateY: document.getElementById('rotateY'),
+            rotateX: document.getElementById('rotateX'),
+            rotateZ: document.getElementById('rotateZ'),
+            perspective: document.getElementById('perspective')
+        };
+        
+        function updatePosition() {
+            const values = {
+                top: inputs.top.value,
+                left: inputs.left.value,
+                width: inputs.width.value,
+                height: inputs.height.value,
+                rotateY: inputs.rotateY.value,
+                rotateX: inputs.rotateX.value,
+                rotateZ: inputs.rotateZ.value,
+                perspective: inputs.perspective.value
+            };
+            
+            // Update displays
+            document.getElementById('top-val').textContent = values.top;
+            document.getElementById('left-val').textContent = values.left;
+            document.getElementById('width-val').textContent = values.width;
+            document.getElementById('height-val').textContent = values.height;
+            document.getElementById('rotateY-val').textContent = values.rotateY;
+            document.getElementById('rotateX-val').textContent = values.rotateX;
+            document.getElementById('rotateZ-val').textContent = values.rotateZ;
+            document.getElementById('perspective-val').textContent = values.perspective;
+            
+            // Apply styles
+            centerConsole.style.top = values.top + '%';
+            centerConsole.style.left = values.left + '%';
+            centerConsole.style.width = values.width + '%';
+            centerConsole.style.height = values.height + '%';
+            centerConsole.style.transform = `perspective(${values.perspective}px) rotateY(${values.rotateY}deg) rotateX(${values.rotateX}deg) rotateZ(${values.rotateZ}deg)`;
+            
+            // Update CSS output
+            const css = `.center-console {
+    top: ${values.top}%;
+    left: ${values.left}%;
+    width: ${values.width}%;
+    height: ${values.height}%;
+    transform: perspective(${values.perspective}px) rotateY(${values.rotateY}deg) rotateX(${values.rotateX}deg) rotateZ(${values.rotateZ}deg);
+    transform-origin: center center;
+}`;
+            document.getElementById('css-output').textContent = css;
+        }
+        
+        function copyCSS() {
+            const cssText = document.getElementById('css-output').textContent;
+            navigator.clipboard.writeText(cssText).then(() => {
+                alert('CSS values copied! Now paste them in your chat with Kiro.');
+            }).catch(() => {
+                alert('Select and copy the green text below, then paste it in chat with Kiro.');
+            });
+        }
+        
+        // Add event listeners
+        Object.values(inputs).forEach(input => {
+            input.addEventListener('input', updatePosition);
+        });
+        
+        // Initial update
+        updatePosition();
+    </script>
+</body>
+</html>

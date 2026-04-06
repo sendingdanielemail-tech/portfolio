@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Case study: Adding ADAS intelligence to older delivery vehicles at Amazon. Designing safety notification systems for fleet vehicles without built-in sensors.">
+    <meta property="og:title" content="Adding ADAS Intelligence — Daniel Hennessy">
+    <meta property="og:description" content="Case study: Adding ADAS intelligence to older delivery vehicles at Amazon. Designing safety notification systems for fleet vehicles without built-in sensors.">
+    <meta property="og:url" content="https://dhennessy.xyz/work/adas.html">
+    <meta property="og:type" content="article">
+    <meta name="author" content="Daniel Hennessy">
+        <link rel="canonical" href="https://dhennessy.xyz/work/adas.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<title>Added ADAS Intelligence to Older Vehicles — Daniel Hennessy</title>
+<style>
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f5f0;
+    --red: #e63312;
+    --gray: #888;
+    --dark-gray: #555;
+    --rule: rgba(0, 0, 0, 0.05);
+    --rule-heavy: rgba(0, 0, 0, 0.05);
+    --margin: clamp(24px, 5vw, 80px);
+    --gutter: clamp(16px, 2vw, 24px);
+    --cols: 6;
+
+  }
+
+  body {
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    background-color: var(--white);
+    color: var(--black);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============================================
+     STRUCTURAL GRID — 6-column Brockmann system
+     ============================================ */
+
+  /* Column guides — faint vertical lines showing the underlying structure */
+  .grid-guides {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: var(--gutter);
+    padding: 0 var(--margin);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .grid-guides .col-guide {
+    border-left: 1px solid rgba(0, 0, 0, 0.05);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  /* Base grid row — everything on the page snaps to this */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: 0 var(--gutter);
+    padding: 0 var(--margin);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Column span utilities */
+  .col-1-2 { grid-column: 1 / 3; }
+  .col-1-3 { grid-column: 1 / 4; }
+  .col-1-4 { grid-column: 1 / 5; }
+  .col-1-6 { grid-column: 1 / -1; }
+  .col-2-5 { grid-column: 2 / 6; }
+  .col-2-6 { grid-column: 2 / -1; }
+  .col-3-6 { grid-column: 3 / -1; }
+  .col-3-4 { grid-column: 3 / 5; }
+  .col-4-6 { grid-column: 4 / -1; }
+  .col-5-6 { grid-column: 5 / -1; }
+
+  /* ============================================
+     NAV
+     ============================================ */
+  nav {
+    padding: var(--margin);
+    padding-bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    position: relative;
+    z-index: 1;
+  }
+  nav .name {
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  nav .name a {
+    color: var(--black);
+    text-decoration: none;
+  }
+  nav .back {
+    font-size: 13px;
+    color: var(--gray);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  nav .back:hover { color: var(--black); }
+
+  /* ============================================
+     CASE STUDY HEADER — spans grid
+     ============================================ */
+  .cs-header {
+    padding-top: clamp(60px, 10vh, 120px);
+    padding-bottom: clamp(40px, 6vh, 80px);
+    align-items: end;
+  }
+  .cs-header .number {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--red);
+    text-transform: uppercase;
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .cs-header .header-content h1 {
+    font-size: clamp(36px, 5.5vw, 72px);
+    font-weight: 900;
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    max-width: 18ch;
+  }
+  .cs-header .header-content .lede {
+    margin-top: 24px;
+    font-size: clamp(17px, 2vw, 22px);
+    line-height: 1.5;
+    color: var(--dark-gray);
+    max-width: 48ch;
+  }
+
+  /* ============================================
+     META BAR — snaps to grid columns
+     ============================================ */
+  .meta-bar {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    border-top: 1px solid var(--rule-heavy);
+    border-bottom: 1px solid var(--rule-heavy);
+  }
+  .meta-bar dt {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    margin-bottom: 6px;
+  }
+  .meta-bar dd {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* ============================================
+     HERO IMAGE — full width
+     ============================================ */
+  .cs-hero {
+    margin-top: clamp(32px, 5vh, 64px);
+  }
+  .cs-hero .hero-img {
+    background: #cbd5e1;
+    height: clamp(300px, 45vw, 560px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    overflow: hidden;
+    border-radius: 4px;
+  }
+  .cs-hero .hero-img iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  /* ============================================
+     SECTION BLOCKS — label in col 1-2, content in 3-6
+     ============================================ */
+  .section-block {
+    padding-top: clamp(48px, 6vh, 96px);
+    padding-bottom: clamp(48px, 6vh, 96px);
+  }
+  .section-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .section-content h2 {
+    font-size: clamp(24px, 2.8vw, 34px);
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  .section-content p {
+    font-size: 16px;
+    line-height: 1.75;
+    color: #444;
+    margin-bottom: 16px;
+    max-width: 58ch;
+  }
+
+  /* ============================================
+     DIVIDERS
+     ============================================ */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 0 var(--margin);
+  }
+  .divider-heavy {
+    border: none;
+    border-top: 1px solid var(--rule-heavy);
+    margin: 0 var(--margin);
+  }
+
+  /* ============================================
+     PULL QUOTE — full-width, red line at left edge
+     ============================================ */
+  .pull-quote-block {
+    padding-top: clamp(48px, 6vh, 80px);
+    padding-bottom: clamp(48px, 6vh, 80px);
+  }
+  .pull-quote {
+    font-size: clamp(24px, 3.2vw, 42px);
+    font-weight: 900;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--black);
+    margin: 0;
+    padding: 0 0 0 clamp(16px, 2vw, 24px);
+    position: relative;
+    /* Kill Safari's blockquote defaults */
+    -webkit-margin-start: 0;
+    -webkit-margin-end: 0;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+  }
+  /* Red line aligned to the left edge of column 1 */
+  .pull-quote::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 3px;
+    background: var(--red);
+  }
+  .pull-quote .pq-attribution {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--gray);
+    margin-top: 16px;
+  }
+
+  /* ============================================
+     IMAGE LAYOUTS — multiple configurations
+     ============================================ */
+  /* Full-width single image */
+  .img-full {
+    background: #e0ddd8;
+    height: clamp(240px, 35vw, 480px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    overflow: hidden;
+  }
+
+  /* 2-up image pair (each 3 columns) */
+  .img-half {
+    background: #e0ddd8;
+    height: clamp(200px, 28vw, 380px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    overflow: hidden;
+  }
+  img.img-half {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 4px;
+    background: var(--white);
+    border: 1px solid #999;
+  }
+
+  /* 3-up image row (each 2 columns) */
+  .img-third {
+    background: #e0ddd8;
+    height: clamp(160px, 22vw, 300px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    overflow: hidden;
+  }
+
+  /* Image caption */
+  .img-caption {
+    font-size: 12px;
+    color: var(--gray);
+    margin-top: 10px;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+  }
+
+  /* Light/Dark mode toggle */
+  .mode-toggle {
+    display: flex;
+    gap: 2px;
+  }
+  .mode-btn {
+    padding: 8px 18px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--gray);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .mode-btn:first-child { border-radius: 4px 0 0 4px; }
+  .mode-btn:last-child { border-radius: 0 4px 4px 0; }
+  .mode-btn.active {
+    background: var(--black);
+    color: var(--white);
+    border-color: var(--black);
+  }
+  .mode-btn:hover:not(.active) {
+    border-color: var(--black);
+    color: var(--black);
+  }
+
+  /* Before/After image labels */
+  .img-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  /* Annotation legend for numbered callouts */
+  .annotation-legend {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #444;
+    margin-top: 12px;
+    padding-left: 20px;
+  }
+  .annotation-legend li {
+    margin-bottom: 6px;
+  }
+  .annotation-legend li::marker {
+    color: var(--red);
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .annotation-legend.dark li::marker {
+    color: var(--black);
+  }
+
+  /* Spacing between image rows */
+  .img-row { margin-top: var(--gutter); }
+  .img-row:first-child { margin-top: 0; }
+
+  /* ============================================
+     TESTING SECTION — simulator with button panel
+     ============================================ */
+  .simulator-container {
+    display: flex;
+    gap: var(--gutter);
+    align-items: stretch;
+  }
+
+  .simulator-screen {
+    flex: 1;
+    position: relative;
+    aspect-ratio: 16 / 10;
+    background: #0a0a0a;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .sim-scene {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: opacity 0.35s ease;
+  }
+
+  .sim-scene-next {
+    opacity: 0;
+    z-index: 1;
+  }
+
+  /* Status label overlay */
+  .sim-status {
+    position: absolute;
+    bottom: 16px; left: 16px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    pointer-events: none;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .sim-status.visible { opacity: 1; }
+
+  /* Button panel on the right */
+  .sim-panel {
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sim-panel-instruction {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gray);
+    margin-bottom: 4px;
+  }
+
+  .sim-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    background: var(--white);
+    border: 2px solid var(--black);
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--black);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+  }
+
+  .sim-btn:hover {
+    background: var(--black);
+    color: var(--white);
+  }
+
+  .sim-btn:active {
+    transform: scale(0.98);
+  }
+
+  .sim-btn.active {
+    background: var(--black);
+    color: var(--white);
+  }
+
+  .sim-btn-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s ease;
+  }
+
+  .sim-btn-icon svg {
+    width: 10px;
+    height: 10px;
+    fill: var(--white);
+  }
+
+  .sim-btn:hover .sim-btn-icon {
+    background: var(--white);
+  }
+  .sim-btn:hover .sim-btn-icon svg {
+    fill: var(--black);
+  }
+
+  .sim-btn.active .sim-btn-icon {
+    background: var(--red);
+  }
+  .sim-btn.active .sim-btn-icon svg {
+    fill: var(--white);
+  }
+
+  .sim-btn-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .sim-btn-label {
+    line-height: 1.2;
+  }
+
+  .sim-btn-meta {
+    font-size: 10px;
+    font-weight: 400;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  @media (max-width: 768px) {
+    .simulator-container {
+      flex-direction: column;
+    }
+    .sim-panel {
+      width: 100%;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .sim-panel-instruction {
+      width: 100%;
+    }
+    .sim-btn {
+      flex: 1;
+      min-width: 140px;
+      padding: 12px 14px;
+    }
+  }
+
+  /* A/B/C variant strip */
+  .variant-strip {
+    margin-top: var(--gutter);
+  }
+  .variant-strip .variant {
+    background: #e0ddd8;
+    height: clamp(140px, 18vw, 220px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    overflow: hidden;
+  }
+  .variant-strip .variant-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  /* ============================================
+     RESULTS SECTION
+     ============================================ */
+  .results-block {
+    padding-top: clamp(48px, 6vh, 80px);
+    padding-bottom: clamp(48px, 6vh, 80px);
+  }
+  /* Results header — label + h2 sit below the heavy divider HR */
+  .results-rule {
+    padding-bottom: clamp(32px, 4vh, 56px);
+  }
+  .results-block h2 {
+    font-size: clamp(24px, 2.8vw, 34px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-cell {
+    padding: clamp(24px, 3vw, 40px) 0;
+    border-bottom: 1px solid var(--rule-heavy);
+  }
+  .stat-cell .number-lg {
+    font-size: clamp(40px, 5.5vw, 64px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--black);
+    line-height: 1;
+  }
+  .stat-cell .stat-label {
+    font-size: 13px;
+    margin-top: 8px;
+    color: var(--red);
+    line-height: 1.5;
+  }
+
+  .results-context {
+    margin-top: clamp(32px, 4vh, 48px);
+  }
+  .results-context p {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #444;
+    margin-bottom: 12px;
+  }
+  .results-context strong {
+    color: var(--black);
+  }
+
+  /* ============================================
+     NEXT PROJECT — full card with image
+     ============================================ */
+  .next-project {
+    padding: clamp(48px, 6vh, 80px) 0;
+    border-top: 1px solid var(--rule-heavy);
+  }
+  .next-project-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gray);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .next-project-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gutter);
+  }
+  .next-project-content .next-text h3 {
+    font-size: clamp(24px, 3vw, 38px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .next-project-content .next-text h3 a {
+    color: var(--black);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .next-project-content .next-text h3 a:hover { color: var(--red); }
+  .next-project-content .next-text .next-meta {
+    font-size: 13px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .next-project-content .next-img {
+    background: #e0ddd8;
+    height: clamp(160px, 20vw, 260px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ============================================
+     FOOTER
+     ============================================ */
+  footer {
+    padding: 32px var(--margin);
+    font-size: 12px;
+    color: var(--gray);
+    letter-spacing: 0.04em;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ============================================
+     RESPONSIVE — grid collapses below 768px
+     ============================================ */
+  @media (max-width: 768px) {
+    :root { --cols: 1; }
+
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .col-1-2, .col-1-3, .col-1-4, .col-1-6,
+    .col-2-5, .col-2-6, .col-3-6, .col-3-4,
+    .col-4-6, .col-5-6 {
+      grid-column: 1 / -1;
+    }
+
+    .grid-guides { display: none; }
+
+    .meta-bar.grid {
+      grid-template-columns: 1fr 1fr;
+      row-gap: 20px;
+    }
+
+    .next-project-content {
+      grid-template-columns: 1fr;
+    }
+
+    .variant-strip.grid {
+      grid-template-columns: 1fr;
+      row-gap: var(--gutter);
+    }
+    .variant-strip .col-1-2,
+    .variant-strip .col-3-4,
+    .variant-strip .col-5-6 {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* Keyboard focus indicators (accessibility) */
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  *:focus { outline: none; }  /* Remove default only when :focus-visible is supported */
+
+</style>
+</head>
+<body>
+
+<!-- STRUCTURAL GRID GUIDES — visible Brockmann homage -->
+<div class="grid-guides" aria-hidden="true">
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="name"><a href="../index.html">Daniel Hennessy</a></div>
+  <a class="back" href="../index.html">&larr; All Projects</a>
+</nav>
+
+<!-- ============================================
+     HEADER — label col 1-2, title col 3-6
+     ============================================ -->
+<div class="grid cs-header">
+  <div class="col-1-2">
+    <span class="number">Case Study 01</span>
+  </div>
+  <div class="col-3-6 header-content">
+    <h1>Adding ADAS intelligence to older delivery vehicles</h1>
+    <p class="lede">Designed a pre-collision notification system for Amazon's delivery fleet — bringing modern safety features to vehicles that shipped without them.</p>
+  </div>
+</div>
+
+<!-- ============================================
+     META BAR — 4 items across 6 columns
+     ============================================ -->
+<div class="grid meta-bar">
+  <dl class="col-1-2">
+    <dt>Role</dt>
+    <dd>Lead Product Designer</dd>
+  </dl>
+  <dl class="col-3-4">
+    <dt>Company</dt>
+    <dd>Amazon / Rivian</dd>
+  </dl>
+  <dl class="col-5-6">
+    <dt>Duration</dt>
+    <dd>8 Months</dd>
+  </dl>
+</div>
+
+<!-- ============================================
+     HERO IMAGE — full 6-column bleed
+     ============================================ -->
+<div class="grid cs-hero">
+  <div class="col-1-6 hero-img">
+    <iframe src="../assets/adas/adas-hero-image.html" title="ADAS Sensor Coverage Visualization" loading="lazy"></iframe>
+  </div>
+</div>
+
+<!-- ============================================
+     SITUATION
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Situation</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>Thousands of delivery vehicles with zero collision warnings</h2>
+    <p>As lead product designer for safety and innovation on Amazon's last-mile delivery team, I was tasked with designing a pre-collision notification system for a fleet of vehicles that predated modern ADAS features. Drivers operating in dense urban environments had no advance warning when a pedestrian, cyclist, or vehicle entered a collision trajectory.</p>
+    <p>The technical constraint shaped the entire design challenge: alerts had to render on screens that already existed in the vehicle — specifically the center console tablet that drivers used for routing and delivery tasks. I couldn't add hardware. I couldn't take over the screen. I had to find space within an interface drivers already depended on, placing notifications close to the road view so they'd register in a driver's natural sight line without disrupting their workflow.</p>
+    <p>This meant redesigning parts of the existing tablet experience to make room for safety information — before I could design the alerts themselves.</p>
+  </div>
+</div>
+
+<!-- BEFORE / AFTER: Tablet redesign -->
+<div class="grid section-block" style="padding-bottom: 0;">
+  <div class="col-1-2">
+    <div class="section-label">Redesign</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>Making space for real-time alerts</h2>
+    <p>Safety notifications needed to live as close to the road view as possible — that's where a driver's attention already is, and that's where it needs to stay in a critical moment. But the existing tablet UI was cluttered with persistent controls, expanded panels, and misaligned elements that left no room for an alert system. Before I could design the notifications themselves, I had to clean up the screen they'd live on.</p>
+  </div>
+</div>
+
+<div class="grid img-row">
+  <div class="col-1-3">
+    <div class="img-label">Existing tablet layout</div>
+    <img class="img-half" src="../assets/adas/before-tablet.png" alt="Before — existing tablet layout" />
+  </div>
+  <div class="col-4-6">
+    <div class="img-label">Redesigned for safety integration</div>
+    <img class="img-half" src="../assets/adas/after-updates.png" alt="After — redesigned for safety integration" />
+  </div>
+</div>
+<div class="grid">
+  <div class="col-1-3">
+    <ol class="annotation-legend dark">
+      <li>Speed limit sign is oversized and off-center</li>
+      <li>Turn-by-turn modal is inconsistent with the Rabbit system and misaligned in this view</li>
+      <li>Action buttons are permanently exposed, even when irrelevant to the current task</li>
+      <li>Itinerary panel is always visible, consumes space, and stays expanded once opened — crowding out the navigation view</li>
+      <li>Street view is pinned to the ETA modal, making the whole block feel cluttered and hard to parse</li>
+      <li>The large X button exits navigation entirely — unintuitive placement on the left side of the screen</li>
+    </ol>
+  </div>
+  <div class="col-4-6 section-content">
+    <p>The redesign consolidated controls, collapsed secondary UI, and reclaimed vertical space along the road view — creating a persistent notification zone where safety alerts could render without competing with routing or delivery tasks. Every element that stayed earned its place; everything else moved behind an interaction.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================
+     DESIGN EVOLUTION: Alert visual language
+     ============================================ -->
+<div class="grid section-block" style="padding-bottom: 0;">
+  <div class="col-1-2">
+    <div class="section-label">Evolution</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>From text to instinct: designing the alert language</h2>
+    <p>With the screen cleaned up and a notification zone in place, the next challenge was the alert itself — how do you communicate a hazard to a driver in a fraction of a second? I explored three directions, testing each with drivers to find the one that required zero interpretation.</p>
+  </div>
+</div>
+
+<!-- 3-up: Pedestrian directions -->
+<div class="grid img-row">
+  <div class="col-1-2">
+    <div class="img-label">Direction 1</div>
+    <img src="../assets/adas/pedestrian-01.png" alt="Direction 1 — text-based pedestrian alert" style="width: 100%; height: auto; display: block; border-radius: 4px; border: 1px solid var(--rule);" />
+  </div>
+  <div class="col-3-4">
+    <div class="img-label">Direction 2</div>
+    <img src="../assets/adas/pedestrian-02.png" alt="Direction 2 — arrow-based pedestrian alert" style="width: 100%; height: auto; display: block; border-radius: 4px; border: 1px solid var(--rule);" />
+  </div>
+  <div class="col-5-6">
+    <div class="img-label">Direction 3</div>
+    <img src="../assets/adas/pedestrian-03.png" alt="Direction 3 — spatial position pedestrian alert" style="width: 100%; height: auto; display: block; border-radius: 4px; border: 1px solid var(--rule);" />
+  </div>
+</div>
+<div class="grid" style="margin-top: 12px;">
+  <div class="col-1-2 img-caption">Text-based alert. Communicated the hazard clearly but reading takes precious time in a crisis — and every string would need translation across the fleet's operating languages, creating spacing and localization problems at scale.</div>
+  <div class="col-3-4 img-caption">Arrow indicator. Faster to process than text, but research showed some drivers missed it entirely — the directional cue wasn't prominent enough to register in peripheral vision.</div>
+  <div class="col-5-6 img-caption">Spatial positioning. Showing the hazard's location relative to the vehicle was universally understood — no reading, no interpretation. This direction received strongly positive feedback from every research participant.</div>
+</div>
+
+<hr class="divider" style="margin-top: clamp(48px, 6vh, 80px);">
+
+<!-- ============================================
+     TESTING — elevated with simulator feature
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Testing</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>A simulator that replaced the need for physical vehicles</h2>
+    <p>I built a web-based simulator that renders the full Rivian dashboard interior with real-time alert overlays. This enabled remote A/B testing of visual treatments, timing, and audio patterns — without requiring vehicles or controlled road tests.</p>
+  </div>
+</div>
+
+<!-- SIMULATOR — interactive alert demos -->
+<div class="grid">
+  <div class="col-1-6">
+    <div class="simulator-container">
+      <!-- Screen area -->
+      <div class="simulator-screen" id="sim-screen">
+        <img id="sim-img" class="sim-scene" src="../assets/adas/bike-01.png" alt="Driver POV — clear road" />
+        <img id="sim-img-next" class="sim-scene sim-scene-next" src="" alt="" />
+        <div class="sim-status" id="sim-status"></div>
+      </div>
+
+      <!-- Button panel -->
+      <div class="sim-panel">
+        <div class="sim-panel-instruction">Tap to trigger alert</div>
+
+        <button class="sim-btn" data-scenario="bicycle">
+          <span class="sim-btn-icon">
+            <svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>
+          </span>
+          <span class="sim-btn-text">
+            <span class="sim-btn-label">Detect Cyclist</span>
+            <span class="sim-btn-meta">Low alert</span>
+          </span>
+        </button>
+
+        <button class="sim-btn" data-scenario="vehicle">
+          <span class="sim-btn-icon">
+            <svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>
+          </span>
+          <span class="sim-btn-text">
+            <span class="sim-btn-label">Vehicle Collision</span>
+            <span class="sim-btn-meta">Escalating alert</span>
+          </span>
+        </button>
+
+        <button class="sim-btn" data-scenario="train">
+          <span class="sim-btn-icon">
+            <svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>
+          </span>
+          <span class="sim-btn-text">
+            <span class="sim-btn-label">Train Crossing</span>
+            <span class="sim-btn-meta">High alert</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid" style="margin-top: 16px;">
+  <div class="col-3-6 section-content">
+    <p>The simulator became a reusable tool for the safety team, enabling rapid iteration on new alert scenarios long after this project shipped.</p>
+  </div>
+</div>
+
+<!-- ============================================
+     PULL QUOTE — driver feedback
+     ============================================ -->
+<div class="grid pull-quote-block">
+  <div class="col-1-6">
+    <div class="pull-quote">
+      &ldquo;This is great and I get it right away. It can be super hard to see bikes &amp; people, especially at night, so I feel way better with this thing.&rdquo;
+      <span class="pq-attribution">Steve J. — Delivery Associate, 2.5 years</span>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================
+     DELIVERABLES — framework + final alert states
+     ============================================ -->
+<div class="grid section-block" style="padding-bottom: 0;">
+  <div class="col-1-2">
+    <div class="section-label">Deliverables</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>A three-tier alert framework calibrated to cognitive load</h2>
+    <p>The alert fatigue insight drove everything: alert intensity needed to match what drivers can actually process, not just how dangerous the situation is. I designed a framework with three severity levels — LOW (ambient awareness), MID (active attention), and HIGH (immediate action) — each with distinct visual weight, color treatment, and audio cues.</p>
+    <p>Alerts render on two surfaces simultaneously: the driver cluster for peripheral vision and the center console for detail. Eye-tracking data showed drivers check different screens at different speeds, which drove this split-surface approach.</p>
+  </div>
+</div>
+
+<!-- IMAGE: Final alert states -->
+<div class="grid img-row">
+  <div class="col-1-6">
+    <img src="../assets/adas/finals.png" alt="Final alert states across all scenarios" style="width: 100%; height: auto; display: block; border-radius: 4px; border: 1px solid var(--rule);" />
+  </div>
+</div>
+<div class="grid">
+  <div class="col-1-6 img-caption">Each scenario maps to specific sensor inputs and renders in real-time across both surfaces.</div>
+</div>
+
+<!-- PLACEMENT: Light/dark mode toggle -->
+<div class="grid section-block" style="padding-bottom: 0;">
+  <div class="col-1-2">
+    <div class="section-label">Placement</div>
+  </div>
+  <div class="col-3-6">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btn-light" onclick="showMode('light')">Light mode</button>
+      <button class="mode-btn" id="btn-dark" onclick="showMode('dark')">Dark mode</button>
+    </div>
+  </div>
+</div>
+
+<div class="grid img-row">
+  <div class="col-2-5">
+    <img id="placement-light" src="../assets/adas/light-mode.png" alt="Alert placement — light mode" style="width: 100%; height: auto; display: block; border-radius: 4px; border: 1px solid var(--rule);" />
+    <img id="placement-dark" src="../assets/adas/dark-mode.png" alt="Alert placement — dark mode" style="width: 100%; height: auto; display: none; border-radius: 4px; border: 1px solid var(--rule);" />
+  </div>
+</div>
+
+<!-- ============================================
+     RESULTS
+     ============================================ -->
+<hr class="divider-heavy" style="margin-top: clamp(48px, 6vh, 80px);">
+
+<div class="grid results-block">
+  <!-- Header — label col 1-2, headline col 3-6, rule spans full width -->
+  <div class="col-1-2 results-rule">
+    <span class="section-label">Results</span>
+  </div>
+  <div class="col-3-6 results-rule">
+    <h2>Recommended for fleet-wide pilot</h2>
+  </div>
+
+  <!-- Stats — each pair of columns -->
+  <div class="col-1-2 stat-cell">
+    <div class="number-lg">0.8s</div>
+    <div class="stat-label">Avg. driver response<br>time to HIGH alerts</div>
+  </div>
+  <div class="col-3-4 stat-cell">
+    <div class="number-lg">97%</div>
+    <div class="stat-label">Alert comprehension<br>rate in usability tests</div>
+  </div>
+  <div class="col-5-6 stat-cell">
+    <div class="number-lg">0</div>
+    <div class="stat-label">Collisions across ~500<br>vans over 13+ weeks</div>
+  </div>
+
+  <!-- Context — 2 columns of prose -->
+  <div class="col-1-3 results-context">
+    <p><strong>The framework was recommended for pilot deployment</strong> across the delivery fleet. During the 13+ week pilot across ~500 vans, zero collisions were recorded — while driver satisfaction with the alert system scored 4.8/5.</p>
+  </div>
+  <div class="col-4-6 results-context">
+    <p><strong>The simulator became a reusable design tool</strong> for the safety team, enabling rapid iteration on new alert scenarios without the cost and logistics of physical vehicle testing.</p>
+  </div>
+</div>
+
+<!-- ============================================
+     NEXT PROJECT — card with image
+     ============================================ -->
+<div class="grid" style="padding-top: clamp(24px, 3vh, 48px);">
+  <div class="col-1-6 next-project">
+    <div class="grid" style="padding: 0;">
+      <div class="col-1-2">
+        <span class="next-project-label">Next Project</span>
+      </div>
+      <div class="col-3-6 next-project-content">
+        <div class="next-text">
+          <h3><a href="grocery.html">Reinventing digital grocery shopping &rarr;</a></h3>
+          <span class="next-meta">Target Digital &mdash; Lead Product Designer</span>
+        </div>
+        <div class="next-img">
+          [Target grocery app — shopping tab]
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>&copy; 2026 Daniel Hennessy</footer>
+
+<script>
+// Light/dark mode toggle for placement section
+function showMode(mode) {
+  var light = document.getElementById('placement-light');
+  var dark = document.getElementById('placement-dark');
+  var btnLight = document.getElementById('btn-light');
+  var btnDark = document.getElementById('btn-dark');
+  if (mode === 'light') {
+    light.style.display = 'block';
+    dark.style.display = 'none';
+    btnLight.classList.add('active');
+    btnDark.classList.remove('active');
+  } else {
+    light.style.display = 'none';
+    dark.style.display = 'block';
+    btnDark.classList.add('active');
+    btnLight.classList.remove('active');
+  }
+}
+
+(function() {
+  const BASE = '../assets/adas/';
+
+  // Alert scenes with frame sequences for animation
+  const SCENES = {
+    bicycle: {
+      alertType: 'low',
+      beeps: 1,
+      label: 'Cyclist detected — Low alert',
+      frames: [BASE + 'bike-02.png']
+    },
+    vehicle: {
+      alertType: 'high',
+      beeps: 5,
+      label: 'Collision warning — High',
+      frames: [BASE + 'car-01.png', BASE + 'car-02.png', BASE + 'car-03.png']
+    },
+    train: {
+      alertType: 'mid',
+      beeps: 3,
+      label: 'Stop — High alert',
+      frames: [BASE + 'train-02.png', BASE + 'train-03.png', BASE + 'train-04.png']
+    }
+  };
+
+  const img = document.getElementById('sim-img');
+  const status = document.getElementById('sim-status');
+  const buttons = document.querySelectorAll('.sim-btn');
+
+  let audioCtx = null;
+  let animationInterval = null;
+
+  // Preload all images
+  Object.values(SCENES).forEach(scene => {
+    scene.frames.forEach(src => {
+      const i = new Image(); i.src = src;
+    });
+  });
+
+  // Initialize audio context on first interaction
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  }
+
+  // Play a beep: frequency (Hz), duration (ms)
+  function beep(freq, duration) {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration / 1000);
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + duration / 1000);
+  }
+
+  // Play alert sound based on type and beep count
+  function playAlertSound(type, beepCount) {
+    if (type === 'low') {
+      // Single lower-toned beep
+      beep(440, 250);
+    } else {
+      // Higher-pitched beeps in rapid succession
+      for (let i = 0; i < beepCount; i++) {
+        setTimeout(() => beep(880, 100), i * 110);
+      }
+    }
+  }
+
+  // Trigger alert instantly with animation
+  function triggerAlert(scenarioKey, button) {
+    initAudio();
+
+    const scene = SCENES[scenarioKey];
+    const frames = scene.frames;
+
+    // Stop any existing animation
+    if (animationInterval) {
+      clearTimeout(animationInterval);
+      animationInterval = null;
+    }
+
+    // Update button states
+    buttons.forEach(b => b.classList.remove('active'));
+    button.classList.add('active');
+
+    // Show first alert frame immediately
+    img.src = frames[0];
+
+    // Show status label
+    status.textContent = scene.label;
+    status.classList.add('visible');
+
+    // Play sound immediately
+    playAlertSound(scene.alertType, scene.beeps);
+
+    // Animate through frames with pause on last
+    if (frames.length > 1) {
+      let frameIndex = 0;
+      const normalDelay = 180;
+      const lastFrameDelay = 360; // 2x pause on last frame
+
+      function nextFrame() {
+        frameIndex = (frameIndex + 1) % frames.length;
+        img.src = frames[frameIndex];
+
+        // Use longer delay when showing last frame
+        const delay = (frameIndex === frames.length - 1) ? lastFrameDelay : normalDelay;
+        animationInterval = setTimeout(nextFrame, delay);
+      }
+
+      animationInterval = setTimeout(nextFrame, normalDelay);
+    }
+  }
+
+  // Button click handlers
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const scenario = btn.dataset.scenario;
+      triggerAlert(scenario, btn);
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

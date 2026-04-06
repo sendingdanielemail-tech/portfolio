@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safety Notification Simulator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .hidden { display: none !important; }
+
+        /* ---- Scene view (composite images) ---- */
+        .scene-view {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #0a0a0a;
+            z-index: 1;
+        }
+
+        .scene-image {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: opacity 0.4s ease;
+        }
+
+        .scene-image-next {
+            opacity: 0;
+            z-index: 1;
+        }
+
+        /* Step indicator dots */
+        .scene-step-indicator {
+            position: absolute;
+            bottom: 24px; left: 50%;
+            transform: translateX(-50%);
+            display: flex; gap: 10px;
+            z-index: 101;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .scene-step-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .scene-step-dot:hover { background: rgba(255, 255, 255, 0.5); }
+
+        .scene-step-dot.active {
+            background: #6DCDFF;
+            border-color: #6DCDFF;
+            box-shadow: 0 0 6px rgba(109, 205, 255, 0.5);
+        }
+
+        /* Step label */
+        .scene-step-label {
+            position: absolute;
+            bottom: 64px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            pointer-events: none;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 101;
+        }
+
+        /* ---- Legacy layered vehicle view ---- */
+        .vehicle-background {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #0a0a0a;
+            background-image: url('./assets/windshield/street-view.png');
+            background-size: 100%;
+            background-position: center calc(-182% + -1000px);
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+
+        .vehicle-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: url('./assets/vehicles/rivian-interior.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        /* ---- Floating control panel ---- */
+        .control-panel {
+            position: fixed;
+            top: 120px; left: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 24px;
+            width: 336px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+            transition: all 0.3s ease;
+        }
+
+        .control-panel.minimized {
+            width: 50px; height: 50px;
+            padding: 0; overflow: hidden;
+            border-radius: 50%; cursor: pointer;
+            background: #2a2a2a; border: 2px solid #3a3a3a;
+        }
+        .control-panel.minimized .panel-header h1,
+        .control-panel.minimized .panel-content { display: none; }
+        .control-panel.minimized .panel-header {
+            margin: 0; padding: 0; border: none;
+            height: 100%; display: flex; align-items: center; justify-content: center;
+        }
+        .control-panel.minimized .minimize-btn {
+            position: static; font-size: 20px; color: #888;
+            background: transparent; border: none; min-width: auto; height: auto; padding: 0;
+        }
+        .control-panel.minimized .minimize-btn:hover { background: transparent; color: #aaa; }
+        .control-panel.minimized .minimize-icon { display: none; }
+        .control-panel.minimized .minimize-btn::after { content: "\u2699"; font-size: 36px; }
+
+        .panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #444;
+        }
+
+        .control-panel h1 {
+            font-size: 1.1rem; font-weight: 500;
+            letter-spacing: -0.3px; color: #888; margin: 0; line-height: 1.2;
+        }
+
+        .minimize-btn {
+            background: #2a2a2a; border: 1px solid #3a3a3a; color: #e0e0e0;
+            font-size: 18px; cursor: pointer; padding: 6px 12px; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease; min-width: 36px; height: 32px;
+        }
+        .minimize-btn:hover { background: #333; border-color: #444; }
+        .minimize-icon { font-weight: 300; line-height: 1; }
+
+        .control-group { margin-bottom: 20px; }
+        .control-group label {
+            display: block; font-size: 0.75rem; font-weight: 500; color: #aaa;
+            margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .control-group select {
+            width: 100%; padding: 10px 12px;
+            background: #0a0a0a; border: 1px solid #333; border-radius: 4px;
+            color: #e0e0e0; font-size: 0.9rem;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .control-group select:hover:not(:disabled) { border-color: #555; }
+        .control-group select:focus { outline: none; border-color: #6DCDFF; box-shadow: 0 0 0 3px rgba(109, 205, 255, 0.1); }
+
+        /* Severity / step buttons */
+        .severity-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+        .severity-btn {
+            flex: 1; min-width: 80px;
+            padding: 10px 12px; background: transparent;
+            border: 1px solid #555; border-radius: 4px;
+            color: #e0e0e0; font-size: 0.85rem;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            cursor: pointer; transition: all 0.2s ease; font-weight: 500;
+        }
+        .severity-btn:hover:not(:disabled) { border-color: #777; background: rgba(255,255,255,0.05); }
+        .severity-btn:focus { outline: none; border-color: #6DCDFF; box-shadow: 0 0 0 3px rgba(109, 205, 255, 0.1); }
+        .severity-btn.active { background: #6DCDFF; border-color: #6DCDFF; color: #000; }
+        .severity-btn.active:hover { background: #8DD9FF; border-color: #8DD9FF; }
+
+        .reset-btn {
+            width: 100%; padding: 10px; background: #2a2a2a;
+            border: 1px solid #3a3a3a; border-radius: 4px;
+            color: #e0e0e0; font-size: 0.9rem;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            cursor: pointer; transition: all 0.2s ease; font-weight: 500;
+        }
+        .reset-btn:hover { background: #333; border-color: #444; }
+        .reset-btn:active { transform: translateY(1px); }
+
+        .sr-only {
+            position: absolute; width: 1px; height: 1px;
+            padding: 0; margin: -1px; overflow: hidden;
+            clip: rect(0,0,0,0); white-space: nowrap; border-width: 0;
+        }
+
+        .loading-indicator, .error-message {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); text-align: center;
+            padding: 20px; background: rgba(0,0,0,0.8);
+            border: 1px solid #444; border-radius: 8px; z-index: 50;
+        }
+        .error-message { background: rgba(139,0,0,0.9); border-color: #ff4444; }
+        .loading-indicator p, .error-message p { color: #fff; font-size: 1rem; margin: 0; }
+
+        /* Tablet surfaces */
+        .tablet-surface {
+            position: absolute; background: transparent; border: none;
+            border-radius: 6px; transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center;
+            pointer-events: none; z-index: 10;
+        }
+        .default-screen-image {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; object-fit: contain; z-index: 1;
+        }
+        .driver-cluster { top: 39.4%; left: 19.2%; width: 30.1%; height: 19.1%; }
+        .center-console {
+            top: 48.2%; left: 55%; width: 40.9%; height: 38%;
+            transform: perspective(1000px) rotateY(-6.5deg) rotateX(-0.5deg) rotateZ(6deg);
+            transform-origin: center center;
+        }
+
+        .alert {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; padding: 20px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center; z-index: 10;
+        }
+        .alert.use-image { padding: 0; background: transparent; border: none; z-index: 10; }
+        .alert.use-image img { width: 100%; height: 100%; object-fit: contain; }
+        .alert.use-video { padding: 0; background: transparent; border: none; z-index: 10; }
+        .alert.use-video video { width: 100%; height: 100%; object-fit: contain; }
+
+        .audio-info {
+            margin-top: 0; margin-bottom: 20px; padding: 15px;
+            background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 4px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .control-panel { width: 240px; font-size: 0.9rem; }
+            .control-panel h1 { font-size: 1.1rem; }
+        }
+        @media (max-width: 600px) {
+            .control-panel { width: 200px; padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Full-screen scene view (for composite scene images) -->
+    <div id="scene-view" class="scene-view hidden">
+        <img id="scene-image" class="scene-image" src="" alt="Driver point of view — safety scenario" />
+        <img id="scene-image-next" class="scene-image scene-image-next" src="" alt="" />
+    </div>
+
+    <!-- Full-screen vehicle view (legacy layered approach) -->
+    <div id="vehicle-background" class="vehicle-background">
+        <div id="loading-indicator" class="loading-indicator hidden" role="status" aria-live="polite">
+            <p>Loading vehicle image...</p>
+        </div>
+        <div id="error-message" class="error-message hidden" role="alert" aria-live="assertive">
+            <p>Failed to load vehicle image. Please refresh the page.</p>
+        </div>
+        <div id="center-console" class="tablet-surface center-console" role="region" aria-label="Center console display">
+            <img src="./assets/screens/center-console/Rivian-tablet-view.png" alt="Center console display" class="default-screen-image">
+        </div>
+        <div id="driver-cluster" class="tablet-surface driver-cluster" role="region" aria-label="Driver cluster display">
+            <img src="./assets/screens/driver-cluster/alerts/BASE IC MAP.png" alt="Driver cluster display" class="default-screen-image" id="driver-cluster-default">
+        </div>
+        <div id="vehicle-overlay" class="vehicle-overlay"></div>
+    </div>
+
+    <!-- Floating control panel -->
+    <aside id="control-panel" class="control-panel">
+        <div class="panel-header">
+            <h1>Safety Notification Simulator</h1>
+            <button id="minimize-btn" class="minimize-btn" aria-label="Minimize control panel">
+                <span class="minimize-icon">&minus;</span>
+            </button>
+        </div>
+        <div class="panel-content">
+            <div class="control-group">
+                <label for="scenario-select">Safety Scenario</label>
+                <select id="scenario-select" aria-label="Select a safety scenario">
+                    <option value="">Select a scenario</option>
+                </select>
+            </div>
+            <div class="control-group hidden" id="severity-group">
+                <label>Variation</label>
+                <div class="severity-buttons" id="severity-buttons-container" role="group" aria-label="Select variation"></div>
+            </div>
+            <div id="audio-info" class="audio-info hidden" role="region" aria-label="Audio information">
+                <h3>Audio</h3>
+                <p id="audio-description"></p>
+            </div>
+            <button id="reset-btn" class="reset-btn" aria-label="Reset simulation">Reset Simulation</button>
+        </div>
+    </aside>
+
+    <script>
+    // ========================
+    // CONFIG
+    // ========================
+    const VEHICLES = {
+        rivian: { name: 'Rivian', surfaces: ['driver-cluster', 'center-console'], defaultSurface: 'driver-cluster' },
+        ford: { name: 'Ford Transit', surfaces: ['center-console'], defaultSurface: 'center-console' },
+        mercedes: { name: 'Mercedes Sprinter', surfaces: ['center-console'], defaultSurface: 'center-console' }
+    };
+
+    const SCENARIOS = [
+        {
+            id: 'bicycle', name: 'Bicycle', type: 'scene',
+            steps: [
+                { image: '../Scenes/bike-01.png', label: 'Clear road' },
+                { image: '../Scenes/bike-02.png', label: 'Cyclist detected' }
+            ]
+        },
+        {
+            id: 'vehicle', name: 'Vehicle', type: 'scene',
+            steps: [
+                { image: '../Scenes/car-01.png', label: 'Alert — Low' },
+                { image: '../Scenes/car-02.png', label: 'Alert — Mid' },
+                { image: '../Scenes/car-03.png', label: 'Alert — High' }
+            ]
+        },
+        {
+            id: 'train', name: 'Train', type: 'scene',
+            steps: [
+                { image: '../Scenes/train-01.png', label: 'Clear crossing' },
+                { image: '../Scenes/train-02.png', label: 'Train detected' },
+                { image: '../Scenes/train-03.png', label: 'Alert — Mid' },
+                { image: '../Scenes/train-04.png', label: 'Alert — High' }
+            ]
+        },
+        {
+            id: 'test-a', name: 'Test A (legacy)', surface: 'driver-cluster',
+            alerts: {
+                '01': { video: './assets/screens/driver-cluster/TestABC/Test-A-01.mp4' },
+                '02': { video: './assets/screens/driver-cluster/TestABC/Test-A-02.mp4' }
+            }
+        },
+        {
+            id: 'test-b', name: 'Test B (legacy)', surface: 'driver-cluster',
+            alerts: {
+                '01': { video: './assets/screens/driver-cluster/TestABC/Test-B-01.mp4' },
+                '02': { video: './assets/screens/driver-cluster/TestABC/Test-B-02.mp4' },
+                '03': { video: './assets/screens/driver-cluster/TestABC/Test-B-03.mp4' }
+            }
+        },
+        {
+            id: 'test-c', name: 'Test C (legacy)', surface: 'driver-cluster',
+            alerts: {
+                '01': { image: './assets/screens/driver-cluster/TestABC/Test-C-01-image-only.png' },
+                '02': { video: './assets/screens/driver-cluster/TestABC/Test-C-02.mp4' },
+                '03': { video: './assets/screens/driver-cluster/TestABC/Test-C-03.mp4' },
+                '04': { video: './assets/screens/driver-cluster/TestABC/Test-C-04.mp4' }
+            }
+        }
+    ];
+
+    // ========================
+    // APP
+    // ========================
+    const scenarioSelect = document.getElementById('scenario-select');
+    const severityGroup = document.getElementById('severity-group');
+    const severityButtonsContainer = document.getElementById('severity-buttons-container');
+    const resetBtn = document.getElementById('reset-btn');
+    const minimizeBtn = document.getElementById('minimize-btn');
+    const controlPanel = document.getElementById('control-panel');
+    const audioInfo = document.getElementById('audio-info');
+    const vehicleBackground = document.getElementById('vehicle-background');
+    const centerConsole = document.getElementById('center-console');
+    const driverCluster = document.getElementById('driver-cluster');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const errorMessage = document.getElementById('error-message');
+    const sceneView = document.getElementById('scene-view');
+    const sceneImage = document.getElementById('scene-image');
+    const sceneImageNext = document.getElementById('scene-image-next');
+
+    let severityButtons = [];
+    let currentScenario = null;
+    let currentSeverity = 'low';
+    let currentStepIndex = 0;
+    const currentVehicle = 'rivian';
+    let audioContext = null;
+
+    // --- Scene mode ---
+    function isSceneMode() { return currentScenario && currentScenario.type === 'scene'; }
+
+    function enterSceneMode() {
+        sceneView.classList.remove('hidden');
+        vehicleBackground.classList.add('hidden');
+    }
+
+    function exitSceneMode() {
+        sceneView.classList.add('hidden');
+        vehicleBackground.classList.remove('hidden');
+        removeStepIndicator();
+    }
+
+    function preloadSceneImages(scenario) {
+        if (!scenario.steps) return;
+        scenario.steps.forEach(step => { const img = new Image(); img.src = step.image; });
+    }
+
+    function renderSceneStep(index) {
+        const steps = currentScenario.steps;
+        if (!steps || index < 0 || index >= steps.length) return;
+        currentStepIndex = index;
+        const step = steps[index];
+
+        sceneImageNext.src = step.image;
+        sceneImageNext.onload = () => {
+            sceneImageNext.style.opacity = '1';
+            setTimeout(() => {
+                sceneImage.src = step.image;
+                sceneImageNext.style.opacity = '0';
+            }, 420);
+        };
+
+        updateStepIndicator(index);
+        updateStepLabel(step.label);
+
+        // Update active button in control panel
+        severityButtons.forEach((btn, i) => btn.classList.toggle('active', i === index));
+
+        // Audio feedback for escalating alerts
+        if (index > 0 && steps.length > 2) {
+            const ratio = index / (steps.length - 1);
+            if (ratio >= 0.75) playAlertSound('high');
+            else if (ratio >= 0.4) playAlertSound('mid');
+        } else if (index > 0) {
+            playAlertSound('mid');
+        }
+
+        announceToScreenReader(`Step ${index + 1} of ${steps.length}: ${step.label}`);
+    }
+
+    function createStepIndicator(stepCount) {
+        removeStepIndicator();
+        const indicator = document.createElement('div');
+        indicator.className = 'scene-step-indicator';
+        indicator.id = 'scene-step-indicator';
+        for (let i = 0; i < stepCount; i++) {
+            const dot = document.createElement('button');
+            dot.className = 'scene-step-dot' + (i === 0 ? ' active' : '');
+            dot.dataset.step = i;
+            dot.setAttribute('aria-label', `Step ${i + 1}`);
+            dot.addEventListener('click', () => renderSceneStep(i));
+            indicator.appendChild(dot);
+        }
+        sceneView.appendChild(indicator);
+    }
+
+    function updateStepIndicator(activeIndex) {
+        const indicator = document.getElementById('scene-step-indicator');
+        if (!indicator) return;
+        indicator.querySelectorAll('.scene-step-dot').forEach((dot, i) => {
+            dot.classList.toggle('active', i === activeIndex);
+        });
+    }
+
+    function removeStepIndicator() {
+        const el = document.getElementById('scene-step-indicator');
+        if (el) el.remove();
+        const lbl = document.getElementById('scene-step-label');
+        if (lbl) lbl.remove();
+    }
+
+    function updateStepLabel(text) {
+        let label = document.getElementById('scene-step-label');
+        if (!label) {
+            label = document.createElement('div');
+            label.className = 'scene-step-label';
+            label.id = 'scene-step-label';
+            sceneView.appendChild(label);
+        }
+        label.textContent = text;
+    }
+
+    function handleSceneKeydown(e) {
+        if (!isSceneMode()) return;
+        const steps = currentScenario.steps;
+        if (!steps) return;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (currentStepIndex < steps.length - 1) renderSceneStep(currentStepIndex + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (currentStepIndex > 0) renderSceneStep(currentStepIndex - 1);
+        }
+    }
+
+    // --- Audio ---
+    function initAudioContext() {
+        if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        return audioContext;
+    }
+
+    function playAlertSound(severity) {
+        try {
+            const ctx = initAudioContext();
+            if (severity === 'low') return;
+            if (severity === 'mid') { playBeep(ctx, 500, 0.18, 0); }
+            else if (severity === 'high') {
+                for (let i = 0; i < 7; i++) playBeep(ctx, 850, 0.12, i * 0.15);
+            }
+        } catch (e) { console.error('Audio error:', e); }
+    }
+
+    function playBeep(ctx, frequency, duration, startDelay) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = frequency; osc.type = 'sine';
+        const now = ctx.currentTime + startDelay;
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.3, now + 0.01);
+        gain.gain.linearRampToValueAtTime(0.3, now + duration - 0.05);
+        gain.gain.linearRampToValueAtTime(0, now + duration);
+        osc.start(now); osc.stop(now + duration);
+    }
+
+    // --- Init ---
+    let sortedScenarios = [];
+
+    function init() {
+        sortedScenarios = [...SCENARIOS];
+        populateScenarios();
+        scenarioSelect.addEventListener('change', handleScenarioChange);
+        resetBtn.addEventListener('click', handleReset);
+        minimizeBtn.addEventListener('click', togglePanel);
+        document.addEventListener('keydown', handleSceneKeydown);
+        loadVehicleImage();
+        updateVehicleSurfaces();
+        forceResetToBaseMap();
+    }
+
+    function loadVehicleImage() {
+        const path = './assets/vehicles/rivian-interior.png';
+        const overlay = document.getElementById('vehicle-overlay');
+        const img = new Image();
+        loadingIndicator.classList.remove('hidden');
+        img.onload = () => { overlay.style.backgroundImage = `url('${path}')`; loadingIndicator.classList.add('hidden'); };
+        img.onerror = () => { loadingIndicator.classList.add('hidden'); };
+        img.src = path;
+    }
+
+    function updateVehicleSurfaces() {
+        const v = VEHICLES[currentVehicle];
+        if (!v) return;
+        driverCluster.style.display = v.surfaces.includes('driver-cluster') ? 'flex' : 'none';
+        centerConsole.style.display = v.surfaces.includes('center-console') ? 'flex' : 'none';
+    }
+
+    function populateScenarios() {
+        sortedScenarios.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id; opt.textContent = s.name;
+            scenarioSelect.appendChild(opt);
+        });
+    }
+
+    function togglePanel() {
+        controlPanel.classList.toggle('minimized');
+        minimizeBtn.setAttribute('aria-label',
+            controlPanel.classList.contains('minimized') ? 'Maximize control panel' : 'Minimize control panel');
+    }
+
+    function handleScenarioChange() {
+        const id = scenarioSelect.value;
+        if (!id) {
+            clearAlerts(); exitSceneMode(); disableAllButtons();
+            severityGroup.classList.add('hidden'); audioInfo.classList.add('hidden');
+            vehicleBackground.classList.remove('hidden'); forceResetToBaseMap();
+            return;
+        }
+
+        currentScenario = SCENARIOS.find(s => s.id === id);
+        if (!currentScenario) return;
+
+        if (isSceneMode()) {
+            enterSceneMode();
+            preloadSceneImages(currentScenario);
+            severityGroup.classList.remove('hidden');
+            buildSceneStepButtons();
+            currentStepIndex = 0;
+            sceneImage.src = currentScenario.steps[0].image;
+            sceneImageNext.style.opacity = '0';
+            createStepIndicator(currentScenario.steps.length);
+            updateStepLabel(currentScenario.steps[0].label);
+            if (severityButtons.length > 0) severityButtons[0].classList.add('active');
+            announceToScreenReader(`Selected ${currentScenario.name}`);
+        } else {
+            exitSceneMode();
+            if (!currentScenario.alerts) return;
+            severityGroup.classList.remove('hidden');
+            buildLegacyButtons();
+            selectFirstSeverity();
+            announceToScreenReader(`Selected ${currentScenario.name}`);
+        }
+    }
+
+    function buildSceneStepButtons() {
+        severityButtonsContainer.innerHTML = '';
+        severityButtons = currentScenario.steps.map((step, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'severity-btn';
+            btn.textContent = step.label;
+            btn.setAttribute('aria-label', `Step ${i + 1}: ${step.label}`);
+            btn.addEventListener('click', () => renderSceneStep(i));
+            severityButtonsContainer.appendChild(btn);
+            return btn;
+        });
+    }
+
+    function buildLegacyButtons() {
+        const keys = Object.keys(currentScenario.alerts);
+        severityButtonsContainer.innerHTML = '';
+        severityButtons = keys.map(key => {
+            const btn = document.createElement('button');
+            btn.className = 'severity-btn';
+            btn.dataset.severity = key;
+            btn.textContent = key;
+            btn.addEventListener('click', (e) => {
+                severityButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentSeverity = key;
+                renderAlert();
+                playAlertSound(key);
+            });
+            severityButtonsContainer.appendChild(btn);
+            return btn;
+        });
+    }
+
+    function disableAllButtons() {
+        severityButtons.forEach(b => b.classList.remove('active'));
+        severityButtonsContainer.innerHTML = '';
+        severityButtons = [];
+    }
+
+    function selectFirstSeverity() {
+        severityButtons.forEach(b => b.classList.remove('active'));
+        if (severityButtons.length > 0) currentSeverity = severityButtons[0].dataset.severity;
+    }
+
+    function handleReset() {
+        scenarioSelect.value = '';
+        currentSeverity = 'low'; currentStepIndex = 0; currentScenario = null;
+        disableAllButtons();
+        severityGroup.classList.add('hidden'); audioInfo.classList.add('hidden');
+        exitSceneMode(); forceResetToBaseMap();
+        announceToScreenReader('Simulation reset');
+    }
+
+    // --- Legacy alert rendering ---
+    function renderAlert() {
+        if (!currentScenario || isSceneMode()) return;
+        clearAlerts();
+        const alertData = currentScenario.alerts[currentSeverity];
+        if (!alertData) return;
+        let surfaceType = currentScenario.surface;
+        const v = VEHICLES[currentVehicle];
+        if (surfaceType === 'driver-cluster' && !v.surfaces.includes('driver-cluster')) surfaceType = 'center-console';
+        const target = surfaceType === 'center-console' ? centerConsole : driverCluster;
+        if (!target) return;
+
+        const el = document.createElement('div');
+        el.setAttribute('role', 'alert');
+        if (alertData.video) {
+            el.className = `alert use-video ${currentSeverity}`;
+            el.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:10';
+            const vid = document.createElement('video');
+            vid.src = alertData.video; vid.autoplay = true; vid.loop = true;
+            vid.muted = true; vid.playsInline = true;
+            vid.style.cssText = 'width:100%;height:100%;object-fit:contain';
+            el.appendChild(vid);
+        } else if (alertData.image) {
+            el.className = `alert use-image ${currentSeverity}`;
+            el.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:10';
+            const img = document.createElement('img');
+            img.src = alertData.image; img.style.cssText = 'width:100%;height:100%;object-fit:contain';
+            el.appendChild(img);
+        }
+        target.appendChild(el);
+    }
+
+    function clearAlerts() {
+        if (centerConsole) centerConsole.querySelectorAll('.alert').forEach(a => a.remove());
+        if (driverCluster) driverCluster.querySelectorAll('.alert').forEach(a => a.remove());
+    }
+
+    function forceResetToBaseMap() {
+        if (centerConsole) centerConsole.innerHTML = '<img src="./assets/screens/center-console/Rivian-tablet-view.png" alt="Center console display" class="default-screen-image">';
+        if (driverCluster) driverCluster.innerHTML = '<img src="./assets/screens/driver-cluster/alerts/BASE IC MAP.png" alt="Driver cluster display" class="default-screen-image">';
+    }
+
+    function announceToScreenReader(message) {
+        const el = document.createElement('div');
+        el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+        el.className = 'sr-only'; el.textContent = message;
+        document.body.appendChild(el);
+        setTimeout(() => document.body.removeChild(el), 1000);
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+    </script>
+</body>
+</html>

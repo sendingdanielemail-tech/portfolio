@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Five Smart Friends — Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #F0EDE8;
+    --black: #111;
+    --white: #fff;
+    --muted: #888883;
+    --border: #D1CEC6;
+    --neon: #D6F533;
+    --cream: #F7F4EF;
+    --sand: #D6CEBB;
+  }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background-color: var(--white);
+    background-image:
+      linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+    color: var(--black);
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* ─── LAYOUT: NAV + TWO-PANEL ─── */
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--white);
+    flex-shrink: 0;
+  }
+  .nav-logo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+  }
+  .nav-logo a { color: var(--black); text-decoration: none; }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .nav-badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+  }
+  .nav-back {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .nav-back:hover { color: var(--black); }
+
+  .panels {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ═══════════════════════════════════════
+     LEFT PANEL — SCENARIO PICKER
+     ═══════════════════════════════════════ */
+  .panel-left {
+    width: 300px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    background: var(--white);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .panel-header {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .panel-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .scenario-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .scenario-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 20px;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: background 0.15s;
+    position: relative;
+  }
+  .scenario-btn:hover {
+    background: rgba(0,0,0,0.02);
+  }
+  .scenario-btn.active {
+    background: var(--black);
+    color: var(--white);
+  }
+  .scenario-btn.active .sb-num {
+    -webkit-text-stroke-color: rgba(255,255,255,0.3);
+  }
+  .scenario-btn.active .sb-question {
+    color: var(--white);
+  }
+  .scenario-btn.active .sb-preview {
+    color: rgba(255,255,255,0.5);
+  }
+
+  .sb-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    -webkit-text-stroke: 1.2px var(--black);
+    color: transparent;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .sb-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sb-question {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.25;
+    color: var(--black);
+  }
+  .sb-preview {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+
+  .panel-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+    letter-spacing: 0.3px;
+  }
+
+  /* ═══════════════════════════════════════
+     MAIN PANEL — INPUT + RESPONSES
+     ═══════════════════════════════════════ */
+  .panel-main {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── INPUT STATE ─── */
+  .main-input {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px;
+    max-width: 680px;
+  }
+
+  .input-header {
+    margin-bottom: 32px;
+  }
+  .input-descriptor {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .input-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 800;
+    text-transform: uppercase;
+    line-height: 0.92;
+    letter-spacing: -1px;
+  }
+  .input-title .outline-text {
+    -webkit-text-stroke: 1.5px var(--black);
+    color: transparent;
+  }
+
+  .input-textarea {
+    width: 100%;
+    min-height: 140px;
+    padding: 20px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.65;
+    color: var(--black);
+    background: var(--white);
+    border: 2px solid var(--black);
+    border-radius: 0;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-textarea:focus {
+    box-shadow: 0 0 0 1px var(--black);
+  }
+  .input-textarea::placeholder {
+    color: #999;
+  }
+
+  .submit-btn {
+    margin-top: 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 16px 40px;
+    width: 100%;
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .submit-btn:hover { background: #333; }
+
+  .input-empty {
+    margin-top: 24px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ─── RESPONSE STATE ─── */
+  .main-responses {
+    display: none;
+    flex-direction: column;
+  }
+
+  /* Question banner — black block */
+  .question-banner {
+    background: var(--black);
+    color: var(--white);
+    padding: 32px 40px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .question-banner .qb-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.35);
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+  }
+  .question-banner .qb-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(18px, 2.5vw, 24px);
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+  .question-banner .qb-meta {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+    text-align: right;
+  }
+
+  /* Responses area */
+  .responses-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 40px 80px;
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background-color: var(--white);
+    background-image:
+      linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+    z-index: 5;
+  }
+  .status-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+  .status-dots {
+    display: flex;
+    gap: 6px;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+  .status-dot.active { background: var(--neon); }
+  .status-dot.done { background: var(--black); }
+
+  /* Friend response card */
+  .friend-response {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    border-bottom: 1px solid var(--border);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .friend-response.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .friend-meta {
+    padding: 28px 20px 28px 0;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .friend-meta .fm-number {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    -webkit-text-stroke: 1.2px var(--black);
+    color: transparent;
+    line-height: 1;
+  }
+  .friend-meta .fm-icon { width: 32px; height: 32px; }
+  .friend-meta .fm-icon svg { width: 32px; height: 32px; }
+  .friend-meta .fm-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .friend-meta .fm-domain {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+
+  .friend-content {
+    padding: 28px 0 28px 28px;
+  }
+  .friend-content .fc-text {
+    font-size: 14px;
+    line-height: 1.75;
+    color: #444;
+  }
+  .friend-content .fc-text .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: var(--black);
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: blink 0.8s step-end infinite;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  /* Synthesis card */
+  .synthesis-card {
+    margin-top: 24px;
+    background: var(--black);
+    color: var(--white);
+    padding: 32px;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .synthesis-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .synthesis-card .synth-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 12px;
+  }
+  .synthesis-card .synth-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .synthesis-card .synth-text {
+    font-size: 14px;
+    line-height: 1.75;
+    color: rgba(255,255,255,0.75);
+  }
+
+  /* Try another link */
+  .new-question {
+    margin-top: 32px;
+    text-align: center;
+    padding-bottom: 24px;
+  }
+  .new-question-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--black);
+    background: none;
+    border: none;
+    cursor: pointer;
+    background-image: linear-gradient(var(--neon), var(--neon));
+    background-size: 100% 0.35em;
+    background-position: 0 0.78em;
+    background-repeat: no-repeat;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 860px) {
+    body { overflow: auto; height: auto; }
+    .panels { flex-direction: column; overflow: visible; }
+    .panel-left {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      overflow: visible;
+    }
+    .scenario-list { flex-direction: row; overflow-x: auto; }
+    .scenario-btn { min-width: 220px; border-bottom: none; border-right: 1px solid var(--border); }
+    .panel-footer { display: none; }
+    .panel-main { overflow: visible; }
+    .main-input { padding: 32px 24px; min-height: auto; }
+    .responses-scroll { padding: 0 24px 60px; }
+    .question-banner { padding: 24px; grid-template-columns: 1fr; }
+    .question-banner .qb-label { writing-mode: horizontal-tb; transform: none; }
+    .friend-response { grid-template-columns: 1fr; }
+    .friend-meta {
+      padding: 20px 0 12px;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      flex-direction: row;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .friend-content { padding: 12px 0 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><a href="index.html">Five Smart Friends</a></div>
+  <div class="nav-right">
+    <span class="nav-badge">Interactive Demo</span>
+    <a href="index.html" class="nav-back">&larr; Back</a>
+  </div>
+</nav>
+
+<div class="panels">
+
+  <!-- ═══ LEFT PANEL — SCENARIO PICKER ═══ -->
+  <div class="panel-left">
+    <div class="panel-header">
+      <div class="panel-label">Scenarios</div>
+      <div class="panel-title">Pick a Situation</div>
+    </div>
+    <div class="scenario-list">
+      <button class="scenario-btn" id="sbtn-0" onclick="pickScenario(0)">
+        <div class="sb-num">01</div>
+        <div class="sb-content">
+          <div class="sb-question">Leaving a stable job for a startup</div>
+          <div class="sb-preview">14 months of savings, a partner, and an idea that won't go away.</div>
+        </div>
+      </button>
+      <button class="scenario-btn" id="sbtn-1" onclick="pickScenario(1)">
+        <div class="sb-num">02</div>
+        <div class="sb-content">
+          <div class="sb-question">Moving cities for a relationship</div>
+          <div class="sb-preview">8 months in, remote job, all my people are here.</div>
+        </div>
+      </button>
+      <button class="scenario-btn" id="sbtn-2" onclick="pickScenario(2)">
+        <div class="sb-num">03</div>
+        <div class="sb-content">
+          <div class="sb-question">Going back to school at 35</div>
+          <div class="sb-preview">$95K ceiling, $45K master's, career pivot to data science.</div>
+        </div>
+      </button>
+    </div>
+    <div class="panel-footer">
+      This is a demo with pre-written responses. In the real product, you'd type any situation and get live AI perspectives.
+    </div>
+  </div>
+
+  <!-- ═══ MAIN PANEL ═══ -->
+  <div class="panel-main">
+
+    <!-- INPUT STATE -->
+    <div class="main-input" id="main-input">
+      <div class="input-header">
+        <div class="input-descriptor">Decision Making Tool</div>
+        <h1 class="input-title">DESCRIBE YOUR<br><span class="outline-text">SITUATION</span></h1>
+      </div>
+      <textarea class="input-textarea" id="situation-input" placeholder="Be specific — the more context you give, the sharper the advice."></textarea>
+      <button class="submit-btn" id="submit-btn" onclick="submitFromTextarea()">Get Perspectives</button>
+      <p class="input-empty" id="input-empty">&larr; Pick a scenario from the left to see it in action, or type your own.</p>
+    </div>
+
+    <!-- RESPONSE STATE -->
+    <div class="main-responses" id="main-responses">
+
+      <div class="question-banner">
+        <div class="qb-label">Your Situation</div>
+        <div class="qb-text" id="qb-text"></div>
+        <div class="qb-meta">5 perspectives<br><span id="timer">0s</span></div>
+      </div>
+
+      <div class="responses-scroll" id="responses-scroll">
+        <div class="status-bar">
+          <div class="status-text" id="status-text">Analyzing your situation...</div>
+          <div class="status-dots">
+            <div class="status-dot" id="dot-0"></div>
+            <div class="status-dot" id="dot-1"></div>
+            <div class="status-dot" id="dot-2"></div>
+            <div class="status-dot" id="dot-3"></div>
+            <div class="status-dot" id="dot-4"></div>
+          </div>
+        </div>
+
+        <!-- Friend 1: Philosopher -->
+        <div class="friend-response" id="resp-0">
+          <div class="friend-meta">
+            <div class="fm-number">01</div>
+            <div class="fm-icon">
+              <svg viewBox="0 0 48 48" fill="none" stroke="var(--black)" stroke-width="1.5" stroke-linecap="round">
+                <line x1="10" y1="16" x2="10" y2="38"/><line x1="19" y1="16" x2="19" y2="38"/>
+                <line x1="29" y1="16" x2="29" y2="38"/><line x1="38" y1="16" x2="38" y2="38"/>
+                <line x1="4" y1="38" x2="44" y2="38"/>
+                <polyline points="4,16 24,4 44,16"/><line x1="4" y1="16" x2="44" y2="16"/>
+              </svg>
+            </div>
+            <div class="fm-name">Philosopher</div>
+            <div class="fm-domain">Meaning & Values</div>
+          </div>
+          <div class="friend-content"><div class="fc-text" id="text-0"></div></div>
+        </div>
+
+        <!-- Friend 2: Economist -->
+        <div class="friend-response" id="resp-1">
+          <div class="friend-meta">
+            <div class="fm-number">02</div>
+            <div class="fm-icon">
+              <svg viewBox="0 0 48 48" fill="none" stroke="var(--black)" stroke-width="1.5" stroke-linecap="round">
+                <line x1="6" y1="42" x2="42" y2="42"/><line x1="6" y1="42" x2="6" y2="6"/>
+                <rect x="12" y="26" width="7" height="16" rx="1"/>
+                <rect x="22" y="18" width="7" height="24" rx="1"/>
+                <rect x="32" y="12" width="7" height="30" rx="1"/>
+              </svg>
+            </div>
+            <div class="fm-name">Economist</div>
+            <div class="fm-domain">Costs & Trade-offs</div>
+          </div>
+          <div class="friend-content"><div class="fc-text" id="text-1"></div></div>
+        </div>
+
+        <!-- Friend 3: Relationship -->
+        <div class="friend-response" id="resp-2">
+          <div class="friend-meta">
+            <div class="fm-number">03</div>
+            <div class="fm-icon">
+              <svg viewBox="0 0 48 48" fill="none" stroke="var(--black)" stroke-width="1.5" stroke-linecap="round">
+                <circle cx="24" cy="10" r="6"/><circle cx="10" cy="36" r="6"/><circle cx="38" cy="36" r="6"/>
+                <line x1="20" y1="15" x2="14" y2="31"/><line x1="28" y1="15" x2="34" y2="31"/>
+                <line x1="16" y1="36" x2="32" y2="36"/>
+              </svg>
+            </div>
+            <div class="fm-name">Relationship</div>
+            <div class="fm-domain">People & Ripple Effects</div>
+          </div>
+          <div class="friend-content"><div class="fc-text" id="text-2"></div></div>
+        </div>
+
+        <!-- Friend 4: Creative -->
+        <div class="friend-response" id="resp-3">
+          <div class="friend-meta">
+            <div class="fm-number">04</div>
+            <div class="fm-icon">
+              <svg viewBox="0 0 48 48" fill="none" stroke="var(--black)" stroke-width="1.5" stroke-linecap="round">
+                <path d="M16 30 C16 24 10 20 10 14 A14 14 0 0 1 38 14 C38 20 32 24 32 30"/>
+                <line x1="16" y1="30" x2="32" y2="30"/>
+                <line x1="18" y1="34" x2="30" y2="34"/>
+                <line x1="20" y1="38" x2="28" y2="38"/>
+              </svg>
+            </div>
+            <div class="fm-name">Creative</div>
+            <div class="fm-domain">Reframes & Possibilities</div>
+          </div>
+          <div class="friend-content"><div class="fc-text" id="text-3"></div></div>
+        </div>
+
+        <!-- Friend 5: Strategist -->
+        <div class="friend-response" id="resp-4">
+          <div class="friend-meta">
+            <div class="fm-number">05</div>
+            <div class="fm-icon">
+              <svg viewBox="0 0 48 48" fill="none" stroke="var(--black)" stroke-width="1.5" stroke-linecap="round">
+                <circle cx="24" cy="24" r="18"/><circle cx="24" cy="24" r="7"/>
+                <line x1="24" y1="2" x2="24" y2="12"/><line x1="24" y1="36" x2="24" y2="46"/>
+                <line x1="2" y1="24" x2="12" y2="24"/><line x1="36" y1="24" x2="46" y2="24"/>
+              </svg>
+            </div>
+            <div class="fm-name">Strategist</div>
+            <div class="fm-domain">Action & Path Forward</div>
+          </div>
+          <div class="friend-content"><div class="fc-text" id="text-4"></div></div>
+        </div>
+
+        <!-- Synthesis -->
+        <div class="synthesis-card" id="synthesis-card">
+          <div class="synth-label">Synthesis</div>
+          <div class="synth-title" id="synth-title"></div>
+          <div class="synth-text" id="synth-text"></div>
+        </div>
+
+        <div class="new-question">
+          <button class="new-question-btn" id="new-q-btn" onclick="resetToInput()" style="display:none;">Try Another Scenario</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// PRE-WRITTEN RESPONSES FOR 3 EXAMPLE SCENARIOS
+// ═══════════════════════════════════════
+
+const SCENARIOS = [
+  {
+    question: "Should I leave my stable job to start a company?",
+    input: "I'm considering leaving my stable job to start a company. I have about 14 months of savings, a partner who works full-time, and a product idea I've been thinking about for 2 years. My current job pays well but I feel like I'm coasting. I'm 32.",
+    responses: [
+      "Before we talk about the startup, let's talk about what's actually driving this. You said you feel like you're coasting \u2014 that's worth examining carefully. Is the restlessness about wanting to build something of your own, or is it about the specific environment you're in? Because those lead to very different decisions. If it's autonomy and creative ownership you're after, there may be paths that don't require burning down your financial stability. But if you've genuinely identified a problem you feel called to solve \u2014 something that connects to your values, not just your ambition \u2014 that's a different conversation entirely. The fact that this idea has persisted for two years suggests it's not a passing impulse. What would it mean for you, at 42, to look back and know you never tried?",
+      "Let's run the real numbers, not the optimistic ones. You say 14 months of savings, but that's gross runway. Factor in: health insurance without an employer (likely $400-800/month depending on your state), the equity and retirement matching you're walking away from, any unvested stock or bonuses you'd forfeit, and the tax implications of self-employment. Your real runway is probably closer to 9-10 months. Now, your partner's income is a significant safety net \u2014 but it also means their career flexibility becomes constrained. If they want to switch jobs, take a risk, or take time off in the next 2 years, they can't. That's an opportunity cost you're imposing on them, not just yourself. The expected value calculation: if you have a 20% chance of building something sustainable within 18 months (generous for a first-time founder), you need to weigh that against the certainty of your current compensation trajectory.",
+      "You keep framing this as 'my decision,' but I count at least two people whose lives change significantly. Your partner's full-time income becomes the household safety net \u2014 have you explicitly discussed what that means for their sense of security and their own career plans? There's a difference between a partner saying 'I support you' in a hypothetical conversation and actually living through months of financial uncertainty while carrying the household. I'd also gently push on the 'coasting' feeling. Sometimes that restlessness isn't about the job at all \u2014 it's about a life stage transition, a need for novelty, or an unexamined assumption that productivity equals purpose. Have the honest conversation with your partner where you're not selling them on the idea, but genuinely asking: what would this mean for us?",
+      "Everyone's framing this as quit-or-stay, which is a false binary that's making the decision harder than it needs to be. What if there's a third path? You've been thinking about this for 2 years but haven't built anything yet \u2014 that's actually useful data. What if you gave yourself a 90-day sprint: nights, weekends, early mornings. Build the smallest possible version of the product and try to get one paying customer. If you can't find the energy for that, the startup isn't the answer \u2014 the restlessness is about something else entirely. If you can, you'll have real traction to point to when you do leave, which changes your negotiating position, your confidence, and your runway. Also: have you considered that the 'coasting' feeling might be a feature, not a bug? A low-stress job that pays well is a launchpad, not a prison.",
+      "Here's what I'd recommend after weighing all five perspectives. Don't quit yet, but set a concrete trigger. Give yourself 90 days to validate the idea on the side \u2014 build an MVP, talk to 20 potential customers, get at least one letter of intent or paying user. Set a specific milestone: if you hit it, you give notice. If you don't, you reassess without shame. In parallel, have the real financial conversation with your partner \u2014 not 'I want to do this, are you okay with it,' but 'here's what this actually means for our household for 18 months, what are your boundaries?' Finally, negotiate your exit: don't just quit. Explore a leave of absence, part-time arrangement, or extended notice period. Your employer may value you enough to offer flexibility you haven't asked for. Target decision date: 90 days from today."
+    ],
+    synthesis: {
+      title: "Don't quit yet \u2014 validate first, then decide with real data",
+      text: "The consensus across all five perspectives: the impulse is valid but the timing needs work. Use your current stability as a launchpad, not something to escape from. A 90-day validation sprint lets you test the idea without the financial pressure, gives your partner a defined timeline, and turns this from a leap of faith into a data-driven decision. Set a concrete milestone, hit it or don't, and then decide."
+    }
+  },
+  {
+    question: "Should I move to a new city for a relationship?",
+    input: "My partner of 8 months got a great job offer in Denver. I live in Chicago. I work remotely so I could technically move, but all my friends and family are here. We've been long-distance before and it was hard. I'm 28.",
+    responses: [
+      "Eight months is early \u2014 not too early to care deeply, but early enough that you're still discovering who this person is under sustained stress. The real question isn't 'should I move for them' but 'what kind of life do I want to build, and does Denver with this person fit that vision?' Moving for love is beautiful when it's a chapter in a story you're writing together. It's painful when it's a sacrifice you're making to avoid loss. Which one is this? At 28, your sense of home is still forming. The friends and family in Chicago are real and important \u2014 but they'll still be there. The version of yourself that takes a risk on love and a new city might discover something you can't see from where you're standing.",
+      "Let's map the actual costs. Moving to Denver: one-time relocation costs ($3-5K), potential lease break fees, the social capital you've built in Chicago (professional network, community, routines) which has real economic value even if it's hard to quantify. You work remotely, so income stays constant \u2014 that's your biggest advantage. But here's what most people miss: the cost of not moving is also real. Long-distance relationships have high failure rates, and the emotional toll of another stretch of long-distance has a cost in your wellbeing and productivity. The asymmetry matters: they have a job anchoring them to Denver. You have flexibility. In pure economic terms, you're the lower-friction mover. That doesn't mean you should move \u2014 but it means the logistical argument against it is weaker than it feels.",
+      "You've been long-distance before and it was hard \u2014 that's important data, not a failure. But I want to ask: hard how? Hard because you missed each other, or hard because distance revealed cracks in communication, trust, or compatibility? Those are very different things. At 8 months, you're still in the phase where both people are on their best behavior. Moving in together \u2014 or even to the same city \u2014 will accelerate the relationship. You'll learn in 3 months what would take a year of long-distance. That's a feature, not a bug, but you need to be ready for what you find. The friends and family piece is real. Your support system isn't a luxury \u2014 it's infrastructure. Before you move, honestly assess: will you build a life in Denver, or will you build a life around your partner in Denver? One is sustainable. The other creates resentment.",
+      "Everyone's treating this like a permanent, irreversible decision, but it doesn't have to be. What if you moved to Denver for 6 months \u2014 not forever, not as a trial, but as an adventure? You work remotely. You're 28. You have no mortgage, no kids, no anchor that can't be lifted. Frame it as: 'I'm going to live in Denver for a bit and see what it's like.' If the relationship deepens and the city clicks, you stay. If it doesn't, you come home having had an experience instead of a regret. The worst outcome isn't moving and it not working \u2014 it's spending two years in long-distance limbo, slowly watching the relationship erode while you debate a decision you could have just tested.",
+      "My recommendation: go, but go smart. Give Denver a 6-month committed try \u2014 sign a short-term lease, not a 12-month one. Tell your partner this is your timeline for evaluating the city and the relationship together. Before you go: have an explicit conversation about what happens if it doesn't work. Not because you expect it to fail, but because agreeing on an exit plan while you're both happy makes everything less scary. Keep your Chicago roots warm \u2014 visit quarterly, stay in group chats, don't let those friendships go dormant. And one non-negotiable: build your own life in Denver from day one. Join something, make one friend who isn't through your partner. That's your insurance policy against isolation and resentment."
+    ],
+    synthesis: {
+      title: "Go for 6 months \u2014 test it instead of debating it",
+      text: "The friends agree: your remote work flexibility is a rare advantage, and debating from a distance costs more than trying it firsthand. A 6-month committed experiment in Denver lets you test both the relationship and the city without a permanent commitment. The key: build your own life there from day one, keep Chicago friendships warm, and agree upfront on what happens if it doesn't work."
+    }
+  },
+  {
+    question: "Should I go back to school at 35?",
+    input: "I'm thinking about getting a master's degree in data science. I'm 35, working as a marketing manager making $95K. I feel like I've hit a ceiling and data science jobs pay $130-160K. The program is 2 years part-time and costs $45K. I have $20K in savings.",
+    responses: [
+      "Before we talk about the degree, let's examine the assumption underneath it: that a credential is what's between you and the career you want. Is the ceiling you're hitting actually a skills gap, or is it a positioning problem? Many people return to school not because they need the knowledge \u2014 which is increasingly available through other means \u2014 but because they need permission to see themselves differently. A master's degree is one way to cross that bridge, but it's an expensive one. The deeper question is: do you genuinely want to become a data scientist, or do you want to escape the version of marketing that's boring you? Because if it's the latter, a $45K degree might solve the wrong problem. What would it look like to bring data science into your current marketing work and see if the intersection \u2014 not the pivot \u2014 is where your energy actually lives?",
+      "Let's model this properly. The investment: $45K tuition plus 2 years of reduced capacity (part-time school while working means slower career progression, less energy for networking, and opportunity cost of not pursuing other growth paths). Total real cost is probably closer to $60-70K when you factor in what you're not doing during those two years. The return: $130-160K salary range, but let's be honest about timing. You'll graduate at 37 with zero data science work experience competing against 25-year-olds with 2+ years of experience and the same degree. Your realistic entry point is probably $110-120K, not $160K. That's still a meaningful jump from $95K. Break-even on the degree cost happens around year 3 post-graduation if you land at $115K. But here's the counter-calculation: what if you spent $5K on certifications and online courses, built a portfolio of data projects, and leveraged your marketing domain expertise to land a marketing analytics or data-adjacent role at $115K \u2014 without the degree? Same outcome, fraction of the cost, 6-12 months instead of 2 years.",
+      "How does your household absorb this? If you have a partner, kids, or dependents, two years of part-time school means two years of reduced presence and increased stress. School-plus-work is genuinely hard on relationships. If you're single, the calculus is simpler \u2014 but 35-37 is also a period where many people are building partnerships, starting families, or deepening friendships. Will you have the bandwidth? I also want to flag something about identity: at 35, you've been 'the marketing person' for a decade. Shifting your professional identity is emotionally bigger than people expect. You'll be a beginner again in rooms full of people who are younger and faster. That's not a reason not to do it \u2014 but it's something to prepare for mentally, not just logistically.",
+      "What if the degree isn't the play at all? You're a marketing manager who wants to work with data. That's not a weakness \u2014 that's a superposition. Companies are desperate for people who understand both business context and data. You don't need to become a data scientist \u2014 you need to become the marketing person who speaks data fluently. That's a rarer, more valuable profile. Here's the alternative path: take 3-4 months to learn Python and SQL through free or cheap resources. Build 2-3 portfolio projects using real marketing data. Start calling yourself a 'marketing analytics' professional. Apply for roles like Marketing Analytics Manager, Growth Data Lead, or Customer Insights Director. These roles pay $120-140K and your marketing experience is an asset, not a gap. You skip the degree, save $45K, and get there 18 months faster.",
+      "Here's my recommended path, synthesizing all perspectives. Don't enroll in the master's program yet. Instead, run a 4-month experiment: take one online data science course (spend under $500), complete two portfolio projects using marketing data, and apply for 10 data-adjacent marketing roles. If you land interviews and offers in the $110K+ range, the degree is unnecessary. If you hit a wall where every role explicitly requires the credential, then enroll \u2014 but now you'll start the program with real project experience and a clearer sense of what you're optimizing for. Either way, you've spent $500 and 4 months instead of $45K and 2 years to answer the question. Set a decision date 4 months from today."
+    ],
+    synthesis: {
+      title: "Test the market before buying the credential",
+      text: "All five friends converge on a key insight: the degree might solve the wrong problem. Your marketing experience plus data skills is a rarer, more valuable profile than a pure data science pivot. Run a 4-month experiment first \u2014 learn the basics, build portfolio projects, and test the job market. If the credential is truly the blocker, enroll with confidence. If it's not, you've saved $45K and two years."
+    }
+  }
+];
+
+// ═══════════════════════════════════════
+// ENGINE
+// ═══════════════════════════════════════
+
+let currentScenario = null;
+let timerInterval = null;
+let startTime = null;
+let isRunning = false;
+
+// Click a scenario in the sidebar → fill textarea, then auto-run after a beat
+function pickScenario(index) {
+  if (isRunning) return;
+
+  // Highlight active button
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sbtn-' + index).classList.add('active');
+
+  // Show input view with scenario text
+  showInputView();
+  const textarea = document.getElementById('situation-input');
+  textarea.value = SCENARIOS[index].input;
+  document.getElementById('input-empty').style.display = 'none';
+
+  // Auto-submit after a moment so user sees the textarea populated
+  currentScenario = SCENARIOS[index];
+  setTimeout(() => {
+    startResponses();
+  }, 800);
+}
+
+// Manual submit from textarea (won't work with custom text, but preserves the UI)
+function submitFromTextarea() {
+  if (isRunning) return;
+  const input = document.getElementById('situation-input').value.trim();
+  if (!input) return;
+
+  // Find matching scenario or default to 0
+  let scenarioIndex = 0;
+  if (input.toLowerCase().includes('move') || input.toLowerCase().includes('city') || input.toLowerCase().includes('denver') || input.toLowerCase().includes('relationship')) {
+    scenarioIndex = 1;
+  } else if (input.toLowerCase().includes('school') || input.toLowerCase().includes('degree') || input.toLowerCase().includes('master') || input.toLowerCase().includes('data science')) {
+    scenarioIndex = 2;
+  }
+
+  currentScenario = SCENARIOS[scenarioIndex];
+
+  // Highlight matching sidebar button
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sbtn-' + scenarioIndex).classList.add('active');
+
+  startResponses();
+}
+
+function startResponses() {
+  isRunning = true;
+
+  // Switch to response view
+  document.getElementById('main-input').style.display = 'none';
+  document.getElementById('main-responses').style.display = 'flex';
+
+  // Set question text
+  document.getElementById('qb-text').textContent = currentScenario.question;
+
+  // Reset responses
+  for (let i = 0; i < 5; i++) {
+    document.getElementById('resp-' + i).classList.remove('visible');
+    document.getElementById('text-' + i).innerHTML = '';
+    document.getElementById('dot-' + i).className = 'status-dot';
+  }
+  document.getElementById('synthesis-card').classList.remove('visible');
+  document.getElementById('synth-title').textContent = '';
+  document.getElementById('synth-text').textContent = '';
+  document.getElementById('new-q-btn').style.display = 'none';
+  document.getElementById('status-text').textContent = 'Analyzing your situation...';
+
+  // Reset scroll
+  document.getElementById('responses-scroll').scrollTop = 0;
+
+  // Start timer
+  startTime = Date.now();
+  timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    document.getElementById('timer').textContent = elapsed + 's';
+  }, 1000);
+
+  streamResponses();
+}
+
+async function streamResponses() {
+  const names = ['Philosopher', 'Economist', 'Relationship Expert', 'Creative', 'Strategist'];
+  const scrollEl = document.getElementById('responses-scroll');
+
+  for (let i = 0; i < 5; i++) {
+    document.getElementById('dot-' + i).classList.add('active');
+    document.getElementById('status-text').textContent = names[i] + ' is thinking...';
+    document.getElementById('resp-' + i).classList.add('visible');
+
+    // Scroll within the main panel
+    const card = document.getElementById('resp-' + i);
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    await sleep(400 + Math.random() * 300);
+    await typeText('text-' + i, currentScenario.responses[i]);
+
+    document.getElementById('dot-' + i).classList.remove('active');
+    document.getElementById('dot-' + i).classList.add('done');
+
+    if (i < 4) await sleep(300 + Math.random() * 400);
+  }
+
+  // Synthesis
+  document.getElementById('status-text').textContent = 'Synthesizing all perspectives...';
+  await sleep(600);
+
+  document.getElementById('synth-title').textContent = currentScenario.synthesis.title;
+  document.getElementById('synth-text').textContent = currentScenario.synthesis.text;
+  document.getElementById('synthesis-card').classList.add('visible');
+  document.getElementById('synthesis-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Done
+  clearInterval(timerInterval);
+  const totalTime = Math.floor((Date.now() - startTime) / 1000);
+  document.getElementById('timer').textContent = totalTime + 's';
+  document.getElementById('status-text').textContent = 'All perspectives complete';
+  document.getElementById('new-q-btn').style.display = 'inline-block';
+  isRunning = false;
+}
+
+async function typeText(elementId, text) {
+  const el = document.getElementById(elementId);
+  const words = text.split(' ');
+  let current = '';
+
+  for (let i = 0; i < words.length; i++) {
+    current += (i === 0 ? '' : ' ') + words[i];
+    el.innerHTML = current + '<span class="cursor"></span>';
+
+    let delay = 18 + Math.random() * 22;
+    const lastChar = words[i].slice(-1);
+    if (lastChar === '.' || lastChar === '?' || lastChar === '!') delay += 60;
+    if (lastChar === ',') delay += 30;
+    if (lastChar === ':' || lastChar === ';') delay += 40;
+
+    await sleep(delay);
+  }
+
+  el.innerHTML = current;
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function showInputView() {
+  document.getElementById('main-input').style.display = 'flex';
+  document.getElementById('main-responses').style.display = 'none';
+}
+
+function resetToInput() {
+  showInputView();
+  document.getElementById('situation-input').value = '';
+  document.getElementById('input-empty').style.display = 'block';
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('responses-scroll').scrollTop = 0;
+}
+</script>
+
+</body>
+</html>

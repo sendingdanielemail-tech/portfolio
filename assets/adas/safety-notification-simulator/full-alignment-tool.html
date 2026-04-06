@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Alignment Tool - All Layers</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #vehicle-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #street-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+            background-image: url('./assets/windshield/street-view.png');
+            background-size: cover;
+            background-position: center 30%;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+        
+        #center-console {
+            position: absolute;
+            border: 3px solid lime;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #center-console img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        #driver-cluster {
+            position: absolute;
+            border: 3px solid cyan;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #driver-cluster img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        #vehicle-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('./assets/vehicles/rivian-interior.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: 20;
+        }
+        
+        #controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.95);
+            padding: 20px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #fff;
+            z-index: 100;
+            max-height: 90vh;
+            overflow-y: auto;
+            width: 320px;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+        }
+        
+        .section h3 {
+            margin: 0 0 15px 0;
+            color: #6DCDFF;
+            font-size: 16px;
+        }
+        
+        .control-group {
+            margin-bottom: 12px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 11px;
+            color: #aaa;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        
+        .control-group input {
+            width: 100%;
+            padding: 5px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 4px;
+        }
+        
+        .value-display {
+            display: inline-block;
+            margin-left: 10px;
+            color: #6DCDFF;
+            font-weight: bold;
+        }
+        
+        #css-output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 10px;
+            color: #0f0;
+            white-space: pre-wrap;
+            word-break: break-all;
+            user-select: all;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #6DCDFF;
+            border: none;
+            border-radius: 4px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #8DD9FF;
+        }
+        
+        .toggle-btn {
+            padding: 5px 10px;
+            margin-right: 5px;
+            margin-bottom: 10px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        
+        .toggle-btn.active {
+            background: #6DCDFF;
+            color: #000;
+            border-color: #6DCDFF;
+        }
+    </style>
+</head>
+<body>
+    <div id="vehicle-container">
+        <div id="street-view"></div>
+        <div id="center-console">
+            <img src="./assets/screens/center-console/Rivian-tablet-view.png" alt="Center console">
+        </div>
+        <div id="driver-cluster">
+            <img src="./assets/screens/driver-cluster/alerts/BASE IC MAP.png" alt="Driver cluster">
+        </div>
+        <div id="vehicle-overlay"></div>
+    </div>
+    
+    <div id="controls">
+        <h2 style="margin-top: 0; font-size: 18px;">Full Alignment Tool</h2>
+        
+        <div style="margin-bottom: 15px;">
+            <button class="toggle-btn active" onclick="toggleLayer('street')">Street View</button>
+            <button class="toggle-btn active" onclick="toggleLayer('console')">Center Console</button>
+            <button class="toggle-btn active" onclick="toggleLayer('cluster')">Driver Cluster</button>
+            <button class="toggle-btn active" onclick="toggleLayer('overlay')">Car Overlay</button>
+        </div>
+        
+        <!-- STREET VIEW SECTION -->
+        <div class="section">
+            <h3>🌆 Street View Background</h3>
+            
+            <div class="control-group">
+                <label>Y Offset (px)<span class="value-display" id="street-offset-val">0</span></label>
+                <input type="range" id="street-offset" min="-1000" max="1000" step="10" value="0">
+                <input type="number" id="street-offset-manual" min="-2000" max="2000" step="10" value="0" style="width: 80px; margin-top: 5px; text-align: center;">
+                <small style="color: #666; font-size: 10px; display: block; margin-top: 3px;">Negative = push image up</small>
+            </div>
+            
+            <div class="control-group">
+                <label>Vertical Position (%)<span class="value-display" id="street-pos-val">30</span></label>
+                <input type="range" id="street-pos" min="-200" max="200" step="1" value="30">
+                <input type="number" id="street-pos-manual" min="-500" max="500" step="1" value="30" style="width: 80px; margin-top: 5px; text-align: center;">
+            </div>
+            
+            <div class="control-group">
+                <label>Scale (%)<span class="value-display" id="street-scale-val">100</span></label>
+                <input type="range" id="street-scale" min="50" max="200" step="5" value="100">
+            </div>
+        </div>
+        
+        <!-- DRIVER CLUSTER SECTION -->
+        <div class="section">
+            <h3>🔵 Driver Cluster (IC)</h3>
+            
+            <div class="control-group">
+                <label>Top (%)<span class="value-display" id="cluster-top-val">41</span></label>
+                <input type="range" id="cluster-top" min="0" max="100" step="0.1" value="41">
+            </div>
+            
+            <div class="control-group">
+                <label>Left (%)<span class="value-display" id="cluster-left-val">20.5</span></label>
+                <input type="range" id="cluster-left" min="0" max="100" step="0.1" value="20.5">
+            </div>
+            
+            <div class="control-group">
+                <label>Width (%)<span class="value-display" id="cluster-width-val">27</span></label>
+                <input type="range" id="cluster-width" min="10" max="50" step="0.1" value="27">
+            </div>
+            
+            <div class="control-group">
+                <label>Height (%)<span class="value-display" id="cluster-height-val">16.2</span></label>
+                <input type="range" id="cluster-height" min="10" max="40" step="0.1" value="16.2">
+            </div>
+        </div>
+        
+        <!-- CENTER CONSOLE SECTION -->
+        <div class="section">
+            <h3>🟢 Center Console</h3>
+            
+            <div class="control-group">
+                <label>Top (%)<span class="value-display" id="console-top-val">49.3</span></label>
+                <input type="range" id="console-top" min="0" max="100" step="0.1" value="49.3">
+            </div>
+            
+            <div class="control-group">
+                <label>Left (%)<span class="value-display" id="console-left-val">55.5</span></label>
+                <input type="range" id="console-left" min="0" max="100" step="0.1" value="55.5">
+            </div>
+            
+            <div class="control-group">
+                <label>Width (%)<span class="value-display" id="console-width-val">39.6</span></label>
+                <input type="range" id="console-width" min="10" max="50" step="0.1" value="39.6">
+            </div>
+            
+            <div class="control-group">
+                <label>Height (%)<span class="value-display" id="console-height-val">31.9</span></label>
+                <input type="range" id="console-height" min="10" max="50" step="0.1" value="31.9">
+            </div>
+            
+            <div class="control-group">
+                <label>Rotate Y (deg)<span class="value-display" id="console-rotateY-val">-4.5</span></label>
+                <input type="range" id="console-rotateY" min="-30" max="30" step="0.5" value="-4.5">
+            </div>
+            
+            <div class="control-group">
+                <label>Rotate X (deg)<span class="value-display" id="console-rotateX-val">-2.5</span></label>
+                <input type="range" id="console-rotateX" min="-30" max="30" step="0.5" value="-2.5">
+            </div>
+            
+            <div class="control-group">
+                <label>Rotate Z (deg)<span class="value-display" id="console-rotateZ-val">6</span></label>
+                <input type="range" id="console-rotateZ" min="-30" max="30" step="0.5" value="6">
+            </div>
+            
+            <div class="control-group">
+                <label>Perspective (px)<span class="value-display" id="console-perspective-val">1450</span></label>
+                <input type="range" id="console-perspective" min="200" max="2000" step="50" value="1450">
+            </div>
+        </div>
+        
+        <button onclick="copyCSS()">Done - Copy All CSS Values</button>
+        
+        <div id="css-output"></div>
+        
+        <p style="font-size: 10px; color: #888; margin-top: 10px;">
+            Use toggle buttons to show/hide layers. Adjust sliders to align perfectly. 
+            Click button to copy all CSS values.
+        </p>
+    </div>
+    
+    <script>
+        const streetView = document.getElementById('street-view');
+        const centerConsole = document.getElementById('center-console');
+        const driverCluster = document.getElementById('driver-cluster');
+        const vehicleOverlay = document.getElementById('vehicle-overlay');
+        
+        const inputs = {
+            street: {
+                offset: document.getElementById('street-offset'),
+                offsetManual: document.getElementById('street-offset-manual'),
+                pos: document.getElementById('street-pos'),
+                posManual: document.getElementById('street-pos-manual'),
+                scale: document.getElementById('street-scale')
+            },
+            cluster: {
+                top: document.getElementById('cluster-top'),
+                left: document.getElementById('cluster-left'),
+                width: document.getElementById('cluster-width'),
+                height: document.getElementById('cluster-height')
+            },
+            console: {
+                top: document.getElementById('console-top'),
+                left: document.getElementById('console-left'),
+                width: document.getElementById('console-width'),
+                height: document.getElementById('console-height'),
+                rotateY: document.getElementById('console-rotateY'),
+                rotateX: document.getElementById('console-rotateX'),
+                rotateZ: document.getElementById('console-rotateZ'),
+                perspective: document.getElementById('console-perspective')
+            }
+        };
+        
+        const layerVisibility = {
+            street: true,
+            console: true,
+            cluster: true,
+            overlay: true
+        };
+        
+        // Undo/Redo functionality
+        const history = [];
+        let historyIndex = -1;
+        const maxHistory = 50;
+        
+        function saveState() {
+            const state = {
+                streetOffset: inputs.street.offset.value,
+                streetPos: inputs.street.pos.value,
+                streetScale: inputs.street.scale.value,
+                clusterTop: inputs.cluster.top.value,
+                clusterLeft: inputs.cluster.left.value,
+                clusterWidth: inputs.cluster.width.value,
+                clusterHeight: inputs.cluster.height.value,
+                consoleTop: inputs.console.top.value,
+                consoleLeft: inputs.console.left.value,
+                consoleWidth: inputs.console.width.value,
+                consoleHeight: inputs.console.height.value,
+                consoleRotateY: inputs.console.rotateY.value,
+                consoleRotateX: inputs.console.rotateX.value,
+                consoleRotateZ: inputs.console.rotateZ.value,
+                consolePerspective: inputs.console.perspective.value
+            };
+            
+            // Remove any states after current index
+            history.splice(historyIndex + 1);
+            
+            // Add new state
+            history.push(state);
+            
+            // Limit history size
+            if (history.length > maxHistory) {
+                history.shift();
+            } else {
+                historyIndex++;
+            }
+        }
+        
+        function restoreState(state) {
+            inputs.street.offset.value = state.streetOffset;
+            inputs.street.pos.value = state.streetPos;
+            inputs.street.scale.value = state.streetScale;
+            inputs.cluster.top.value = state.clusterTop;
+            inputs.cluster.left.value = state.clusterLeft;
+            inputs.cluster.width.value = state.clusterWidth;
+            inputs.cluster.height.value = state.clusterHeight;
+            inputs.console.top.value = state.consoleTop;
+            inputs.console.left.value = state.consoleLeft;
+            inputs.console.width.value = state.consoleWidth;
+            inputs.console.height.value = state.consoleHeight;
+            inputs.console.rotateY.value = state.consoleRotateY;
+            inputs.console.rotateX.value = state.consoleRotateX;
+            inputs.console.rotateZ.value = state.consoleRotateZ;
+            inputs.console.perspective.value = state.consolePerspective;
+            
+            updatePosition();
+        }
+        
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                restoreState(history[historyIndex]);
+            }
+        }
+        
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                restoreState(history[historyIndex]);
+            }
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+                e.preventDefault();
+                if (e.shiftKey) {
+                    redo();
+                } else {
+                    undo();
+                }
+            }
+        });
+        
+        function toggleLayer(layer) {
+            layerVisibility[layer] = !layerVisibility[layer];
+            const btn = event.target;
+            btn.classList.toggle('active');
+            
+            switch(layer) {
+                case 'street':
+                    streetView.style.display = layerVisibility[layer] ? 'block' : 'none';
+                    break;
+                case 'console':
+                    centerConsole.style.display = layerVisibility[layer] ? 'flex' : 'none';
+                    break;
+                case 'cluster':
+                    driverCluster.style.display = layerVisibility[layer] ? 'flex' : 'none';
+                    break;
+                case 'overlay':
+                    vehicleOverlay.style.display = layerVisibility[layer] ? 'block' : 'none';
+                    break;
+            }
+        }
+        
+        function updatePosition() {
+            // Street View
+            const streetOffset = inputs.street.offset.value;
+            const streetPos = inputs.street.pos.value;
+            const streetScale = inputs.street.scale.value;
+            document.getElementById('street-offset-val').textContent = streetOffset;
+            document.getElementById('street-pos-val').textContent = streetPos;
+            document.getElementById('street-scale-val').textContent = streetScale;
+            
+            // Sync manual inputs with sliders
+            inputs.street.offsetManual.value = streetOffset;
+            inputs.street.posManual.value = streetPos;
+            
+            streetView.style.backgroundPosition = `center calc(${streetPos}% + ${streetOffset}px)`;
+            streetView.style.backgroundSize = `${streetScale}%`;
+            
+            // Driver Cluster
+            const clusterTop = inputs.cluster.top.value;
+            const clusterLeft = inputs.cluster.left.value;
+            const clusterWidth = inputs.cluster.width.value;
+            const clusterHeight = inputs.cluster.height.value;
+            document.getElementById('cluster-top-val').textContent = clusterTop;
+            document.getElementById('cluster-left-val').textContent = clusterLeft;
+            document.getElementById('cluster-width-val').textContent = clusterWidth;
+            document.getElementById('cluster-height-val').textContent = clusterHeight;
+            driverCluster.style.top = clusterTop + '%';
+            driverCluster.style.left = clusterLeft + '%';
+            driverCluster.style.width = clusterWidth + '%';
+            driverCluster.style.height = clusterHeight + '%';
+            
+            // Center Console
+            const consoleTop = inputs.console.top.value;
+            const consoleLeft = inputs.console.left.value;
+            const consoleWidth = inputs.console.width.value;
+            const consoleHeight = inputs.console.height.value;
+            const consoleRotateY = inputs.console.rotateY.value;
+            const consoleRotateX = inputs.console.rotateX.value;
+            const consoleRotateZ = inputs.console.rotateZ.value;
+            const consolePerspective = inputs.console.perspective.value;
+            
+            document.getElementById('console-top-val').textContent = consoleTop;
+            document.getElementById('console-left-val').textContent = consoleLeft;
+            document.getElementById('console-width-val').textContent = consoleWidth;
+            document.getElementById('console-height-val').textContent = consoleHeight;
+            document.getElementById('console-rotateY-val').textContent = consoleRotateY;
+            document.getElementById('console-rotateX-val').textContent = consoleRotateX;
+            document.getElementById('console-rotateZ-val').textContent = consoleRotateZ;
+            document.getElementById('console-perspective-val').textContent = consolePerspective;
+            
+            centerConsole.style.top = consoleTop + '%';
+            centerConsole.style.left = consoleLeft + '%';
+            centerConsole.style.width = consoleWidth + '%';
+            centerConsole.style.height = consoleHeight + '%';
+            centerConsole.style.transform = `perspective(${consolePerspective}px) rotateY(${consoleRotateY}deg) rotateX(${consoleRotateX}deg) rotateZ(${consoleRotateZ}deg)`;
+            
+            // Update CSS output
+            const css = `/* Street View Background */
+.vehicle-background {
+    background-image: url('./assets/windshield/street-view.png');
+    background-size: ${streetScale}%;
+    background-position: center calc(${streetPos}% + ${streetOffset}px);
+}
+
+/* Driver Cluster (IC) */
+.driver-cluster {
+    top: ${clusterTop}%;
+    left: ${clusterLeft}%;
+    width: ${clusterWidth}%;
+    height: ${clusterHeight}%;
+}
+
+/* Center Console */
+.center-console {
+    top: ${consoleTop}%;
+    left: ${consoleLeft}%;
+    width: ${consoleWidth}%;
+    height: ${consoleHeight}%;
+    transform: perspective(${consolePerspective}px) rotateY(${consoleRotateY}deg) rotateX(${consoleRotateX}deg) rotateZ(${consoleRotateZ}deg);
+    transform-origin: center center;
+}`;
+            document.getElementById('css-output').textContent = css;
+        }
+        
+        function copyCSS() {
+            const cssText = document.getElementById('css-output').textContent;
+            navigator.clipboard.writeText(cssText).then(() => {
+                alert('All CSS values copied! Paste them in chat with Kiro.');
+            }).catch(() => {
+                alert('Select and copy the green text below, then paste it in chat with Kiro.');
+            });
+        }
+        
+        // Add event listeners
+        Object.values(inputs.street).forEach(input => {
+            input.addEventListener('input', () => {
+                // Sync slider with manual inputs
+                if (input === inputs.street.posManual) {
+                    inputs.street.pos.value = input.value;
+                }
+                if (input === inputs.street.offsetManual) {
+                    inputs.street.offset.value = input.value;
+                }
+                saveState();
+                updatePosition();
+            });
+        });
+        Object.values(inputs.cluster).forEach(input => {
+            input.addEventListener('input', () => {
+                saveState();
+                updatePosition();
+            });
+        });
+        Object.values(inputs.console).forEach(input => {
+            input.addEventListener('input', () => {
+                saveState();
+                updatePosition();
+            });
+        });
+        
+        // Initial state
+        saveState();
+        updatePosition();
+    </script>
+</body>
+</html>

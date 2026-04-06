@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Portfolio of Daniel Hennessy — Lead Product Designer specializing in safety, e-commerce, and AI-driven tools at Amazon and Target.">
+    <meta property="og:title" content="Daniel Hennessy — Product Designer">
+    <meta property="og:description" content="Portfolio of Daniel Hennessy — Lead Product Designer specializing in safety, e-commerce, and AI-driven tools at Amazon and Target.">
+    <meta property="og:url" content="https://dhennessy.xyz/">
+    <meta property="og:type" content="website">
+    <meta name="author" content="Daniel Hennessy">
+        <link rel="canonical" href="https://dhennessy.xyz/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Daniel Hennessy — Product Designer</title>
+<style>
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f5f0;
+    --red: #e63312;
+    --gray: #888;
+    --dark-gray: #555;
+    --rule: rgba(0, 0, 0, 0.05);
+    --rule-heavy: rgba(0, 0, 0, 0.05);
+    --margin: clamp(24px, 5vw, 80px);
+    --gutter: clamp(16px, 2vw, 24px);
+    --cols: 6;
+
+  }
+
+  body {
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    background-color: var(--white);
+    color: var(--black);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============================================
+     STRUCTURAL GRID — 6-column Brockmann system
+     ============================================ */
+
+  /* Column guides — visible structure */
+  .grid-guides {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: var(--gutter);
+    padding: 0 var(--margin);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .grid-guides .col-guide {
+    border-left: 1px solid rgba(0, 0, 0, 0.05);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  /* Base grid row */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: 0 var(--gutter);
+    padding: 0 var(--margin);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Column span utilities */
+  .col-1-2 { grid-column: 1 / 3; }
+  .col-1-3 { grid-column: 1 / 4; }
+  .col-1-4 { grid-column: 1 / 5; }
+  .col-1-6 { grid-column: 1 / -1; }
+  .col-2-5 { grid-column: 2 / 6; }
+  .col-2-6 { grid-column: 2 / -1; }
+  .col-3-6 { grid-column: 3 / -1; }
+  .col-3-4 { grid-column: 3 / 5; }
+  .col-4-6 { grid-column: 4 / -1; }
+  .col-5-6 { grid-column: 5 / -1; }
+
+  /* ============================================
+     NAV
+     ============================================ */
+  nav {
+    padding: var(--margin);
+    padding-bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    position: relative;
+    z-index: 1;
+  }
+  nav .name {
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  nav .name a {
+    color: var(--black);
+    text-decoration: none;
+  }
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 32px;
+  }
+  nav ul li a {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--gray);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: color 0.2s;
+  }
+  nav ul li a:hover { color: var(--black); }
+
+  /* ============================================
+     HERO — label col 1-2, content col 3-6
+     ============================================ */
+  .hero {
+    padding-top: clamp(80px, 12vh, 160px);
+    padding-bottom: clamp(60px, 8vh, 120px);
+  }
+  .hero-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .hero h1 {
+    font-size: clamp(44px, 7vw, 100px);
+    font-weight: 900;
+    line-height: 0.94;
+    letter-spacing: -0.03em;
+    max-width: 14ch;
+  }
+  .hero .subtitle {
+    margin-top: 28px;
+    font-size: clamp(16px, 1.8vw, 20px);
+    font-weight: 400;
+    color: var(--dark-gray);
+    max-width: 46ch;
+    line-height: 1.55;
+  }
+
+  /* ============================================
+     DIVIDER
+     ============================================ */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 0 var(--margin);
+  }
+  .divider-heavy {
+    border: none;
+    border-top: 1px solid var(--rule-heavy);
+    margin: 0 var(--margin);
+  }
+
+  /* ============================================
+     SECTION LABEL (reused pattern)
+     ============================================ */
+  .section-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+
+  /* ============================================
+     PROJECT CARDS — 2-up on the grid
+     Each card spans 3 columns (1-3 or 4-6)
+     ============================================ */
+  .projects-section {
+    padding-top: clamp(32px, 4vh, 56px);
+    padding-bottom: 0;
+  }
+
+  .project-card {
+    display: flex;
+    text-decoration: none;
+    color: var(--white);
+    background: var(--black);
+    padding: clamp(28px, 3.5vw, 48px);
+    height: clamp(300px, 35vw, 420px);
+    flex-direction: column;
+    justify-content: flex-end;
+    transition: background 0.3s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-card .card-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.4;
+    pointer-events: none;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+  .project-card:hover .card-img {
+    transform: scale(1.03);
+    opacity: 0.48;
+  }
+  .project-card .card-img-left {
+    object-position: left center;
+  }
+  .project-card .number,
+  .project-card .card-bottom {
+    position: relative;
+    z-index: 1;
+  }
+  .project-card:hover {
+    background: #1a1a1a;
+  }
+  .project-card .number {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    opacity: 1;
+  }
+  .project-card .card-bottom {
+    margin-top: auto;
+  }
+  .project-card h2 {
+    font-size: clamp(20px, 2.5vw, 32px);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    max-width: 18ch;
+  }
+  .project-card .tag {
+    margin-top: 14px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.5;
+  }
+  /* Card row spacing — vertical gap matches horizontal gutter (Brockmann!) */
+  .card-row {
+    margin-top: var(--gutter);
+  }
+  .card-row:first-child {
+    margin-top: 0;
+  }
+
+  /* Full-width card — spans all 6 columns but with internal 2-col layout */
+  .project-card-wide {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gutter);
+    text-decoration: none;
+    color: var(--white);
+    background: var(--black);
+    padding: clamp(28px, 3.5vw, 48px);
+    min-height: clamp(220px, 22vw, 300px);
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .project-card-wide:hover {
+    background: #1a1a1a;
+  }
+  .project-card-wide .number {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    opacity: 0.5;
+  }
+  .project-card-wide .card-bottom {
+    align-self: end;
+  }
+  .project-card-wide h2 {
+    font-size: clamp(20px, 2.5vw, 32px);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    max-width: 24ch;
+  }
+  .project-card-wide .tag {
+    margin-top: 14px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.5;
+  }
+  /* Grid gap between columns already provides horizontal spacing.
+     Vertical gap on card-row matches --gutter for uniform Brockmann grid. */
+
+  /* ============================================
+     FOOTER
+     ============================================ */
+  footer {
+    padding: clamp(48px, 6vh, 80px) 0 32px 0;
+    border-top: 1px solid var(--rule);
+  }
+  footer .footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 12px;
+    color: var(--gray);
+    letter-spacing: 0.04em;
+  }
+  footer a {
+    color: var(--black);
+    text-decoration: none;
+  }
+  footer a:hover { color: var(--red); }
+
+  /* ============================================
+     RESPONSIVE
+     ============================================ */
+  @media (max-width: 768px) {
+    :root { --cols: 1; }
+
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .col-1-2, .col-1-3, .col-1-4, .col-1-6,
+    .col-2-5, .col-2-6, .col-3-6, .col-3-4,
+    .col-4-6, .col-5-6 {
+      grid-column: 1 / -1;
+    }
+
+    .grid-guides { display: none; }
+
+    .project-card-wide {
+      grid-template-columns: 1fr;
+    }
+
+    /* Stack cards vertically with consistent gutter spacing */
+    .card-row {
+      row-gap: var(--gutter);
+    }
+    .card-row .col-1-3,
+    .card-row .col-4-6 {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* Keyboard focus indicators (accessibility) */
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  *:focus { outline: none; }  /* Remove default only when :focus-visible is supported */
+
+</style>
+</head>
+<body>
+
+<!-- STRUCTURAL GRID GUIDES -->
+<div class="grid-guides" aria-hidden="true">
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="name"><a href="index.html">Daniel Hennessy</a></div>
+  <ul>
+    <li><a href="index.html">Work</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+</nav>
+
+<!-- ============================================
+     HERO — label col 1-2, content col 3-6
+     ============================================ -->
+<div class="grid hero">
+  <div class="col-1-2">
+    <span class="hero-label">Portfolio 2026</span>
+  </div>
+  <div class="col-3-6">
+    <h1>Modern UX<br>product design</h1>
+    <p class="subtitle">Product designer obsessed with simplicity — building experiences that earn trust, drive revenue, and scale. Driven by research, collaboration and AI.</p>
+  </div>
+</div>
+
+<hr class="divider-heavy">
+
+<!-- ============================================
+     PROJECT GRID — cards snap to column pairs
+     ============================================ -->
+
+<!-- Row label -->
+<div class="grid projects-section">
+  <div class="col-1-2">
+    <span class="section-label">Selected Work</span>
+  </div>
+</div>
+
+<!-- Row 1: Cards 01 + 02 -->
+<div class="grid card-row" style="margin-top: clamp(16px, 2vh, 28px);">
+  <div class="col-1-3">
+    <a class="project-card" href="work/adas.html">
+
+      <img class="card-img" src="assets/adas/dark-mode.png" alt="" />
+      <div class="card-bottom">
+        <h2>Adding ADAS intelligence to older delivery vehicles</h2>
+        <p class="tag">Amazon &middot; Automotive &middot; Safety</p>
+      </div>
+    </a>
+  </div>
+  <div class="col-4-6">
+    <a class="project-card" href="work/inspections.html">
+
+      <img class="card-img" src="assets/inspections/insp-hero.png" alt="" />
+      <div class="card-bottom">
+        <h2>Modernizing vehicle inspections</h2>
+        <p class="tag">Amazon &middot; Computer Vision &middot; Operations</p>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Row 2: Cards 03 + 04 -->
+<div class="grid card-row">
+  <div class="col-1-3">
+    <a class="project-card" href="work/roll-aways.html">
+      <img class="card-img" src="assets/roll-aways/PPS-HERO.png" alt="" />
+      <div class="card-bottom">
+        <h2>Preventing roll-aways</h2>
+        <p class="tag">Amazon &middot; Vehicle Safety</p>
+      </div>
+    </a>
+  </div>
+  <div class="col-4-6">
+    <a class="project-card" href="work/grocery.html">
+      <img class="card-img" src="assets/grocery/07-full-experience.png" alt="" />
+      <div class="card-bottom">
+        <h2>Reinventing digital grocery shopping</h2>
+        <p class="tag">Target &middot; E-Commerce &middot; Personalization</p>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Row 3: Cards 05 + 06 -->
+<div class="grid card-row">
+  <div class="col-1-3">
+    <a class="project-card" href="work/five-smart-friends.html">
+      <img class="card-img" src="assets/five-smart-friends/tile-image.png" alt="" />
+      <div class="card-bottom">
+        <h2>Building a decision-making tool with AI</h2>
+        <p class="tag">Personal &middot; AI &middot; Product Design</p>
+      </div>
+    </a>
+  </div>
+  <div class="col-4-6">
+    <a class="project-card" href="work/vibe-coding.html">
+      <img class="card-img card-img-left" src="assets/vibe-coding/sticker-sheet.png" alt="" />
+      <div class="card-bottom">
+        <h2>Building visual tools to improve vibe coding</h2>
+        <p class="tag">Amazon &middot; Internal Tool</p>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- ============================================
+     FOOTER — on the grid
+     ============================================ -->
+<div class="grid">
+  <footer class="col-1-6">
+    <div class="footer-content">
+      <span>&copy; 2026 Daniel Hennessy</span>
+      <span><a href="mailto:sendingdanielemail@gmail.com">Email</a> &middot; <a href="https://www.linkedin.com/in/danielhennessy/" target="_blank" rel="noopener">LinkedIn</a></span>
+    </div>
+  </footer>
+</div>
+
+</body>
+</html>

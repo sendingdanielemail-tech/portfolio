@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="About Daniel Hennessy — Lead Product Designer with experience at Amazon, Target, and top agencies. Research-led, systems-minded, collaborative.">
+    <meta property="og:title" content="About — Daniel Hennessy">
+    <meta property="og:description" content="About Daniel Hennessy — Lead Product Designer with experience at Amazon, Target, and top agencies. Research-led, systems-minded, collaborative.">
+    <meta property="og:url" content="https://dhennessy.xyz/about.html">
+    <meta property="og:type" content="profile">
+    <meta name="author" content="Daniel Hennessy">
+        <link rel="canonical" href="https://dhennessy.xyz/about.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>About — Daniel Hennessy</title>
+<style>
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f5f0;
+    --red: #e63312;
+    --gray: #888;
+    --dark-gray: #555;
+    --rule: rgba(0, 0, 0, 0.05);
+    --rule-heavy: rgba(0, 0, 0, 0.05);
+    --text-secondary: #444;
+    --rule-light: #ddd;
+    --margin: clamp(24px, 5vw, 80px);
+  }
+
+  body {
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    background-color: var(--white);
+    color: var(--black);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* === NAV === */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: var(--margin);
+    padding-bottom: 0;
+  }
+  nav .name {
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 32px;
+  }
+  nav ul li a {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--gray);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: color 0.2s;
+  }
+  nav ul li a.active { color: var(--black); }
+  nav ul li a:hover { color: var(--black); }
+
+  /* === HEADER === */
+  .about-header {
+    padding: var(--margin);
+    padding-top: clamp(80px, 12vh, 160px);
+    padding-bottom: clamp(40px, 6vh, 80px);
+    max-width: 1400px;
+  }
+  .about-header h1 {
+    font-size: clamp(40px, 7vw, 96px);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    max-width: 16ch;
+  }
+  .about-header h1 span { color: var(--red); }
+
+  /* === DIVIDER === */
+  .divider {
+    margin: 0 var(--margin);
+    border: none;
+    border-top: 1px solid var(--rule-heavy);
+  }
+  .divider.thin {
+    border-top-width: 1px;
+    border-top-color: var(--rule-light);
+  }
+
+  /* === BIO === */
+  .bio {
+    padding: clamp(48px, 6vh, 80px) var(--margin);
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: clamp(32px, 4vw, 80px);
+    max-width: 1400px;
+  }
+  .bio .label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .bio .content p {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    max-width: 60ch;
+  }
+
+  /* === EXPERIENCE === */
+  .experience {
+    padding: 0 var(--margin);
+    max-width: 1400px;
+  }
+  .exp-header {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: clamp(32px, 4vw, 80px);
+    padding: clamp(32px, 4vh, 56px) 0;
+  }
+  .exp-header .label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+
+  .role {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: clamp(32px, 4vw, 80px);
+    padding: clamp(24px, 3vh, 40px) 0;
+    border-top: 1px solid var(--rule-light);
+  }
+  .role .role-meta {
+    padding-top: 4px;
+  }
+  .role .role-meta .company {
+    font-weight: 900;
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  .role .role-meta .dates {
+    font-size: 13px;
+    color: var(--gray);
+  }
+  .role .role-detail h3 {
+    font-size: clamp(20px, 2.5vw, 28px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .role .role-detail p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    max-width: 60ch;
+  }
+  .role .role-detail .highlights {
+    margin-top: 16px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .role .role-detail .highlight-stat {
+    background: var(--black);
+    color: var(--white);
+    padding: 16px 24px;
+    min-width: 140px;
+  }
+  .highlight-stat .val {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--red);
+  }
+  .highlight-stat .desc {
+    font-size: 12px;
+    color: var(--gray);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* === SKILLS / APPROACH === */
+  .approach {
+    padding: clamp(48px, 6vh, 80px) var(--margin);
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: clamp(32px, 4vw, 80px);
+    max-width: 1400px;
+  }
+  .approach .label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .approach-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+  .approach-card {
+    background: var(--black);
+    color: var(--white);
+    padding: clamp(20px, 2.5vw, 32px);
+  }
+  .approach-card h4 {
+    font-size: 15px;
+    font-weight: 900;
+    margin-bottom: 8px;
+  }
+  .approach-card p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--gray);
+  }
+
+  /* === TEACHING === */
+  .teaching {
+    padding: clamp(48px, 6vh, 80px) var(--margin);
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: clamp(32px, 4vw, 80px);
+    max-width: 1400px;
+  }
+  .teaching .label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .teaching .content p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    max-width: 60ch;
+  }
+
+  /* === CONTACT CTA === */
+  .contact-cta {
+    margin: 0 var(--margin) clamp(48px, 6vh, 80px);
+    background: var(--black);
+    color: var(--white);
+    padding: clamp(48px, 6vh, 80px) clamp(32px, 4vw, 64px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .contact-cta h2 {
+    font-size: clamp(24px, 3.5vw, 42px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+  .contact-cta .links {
+    display: flex;
+    gap: 24px;
+  }
+  .contact-cta .links a {
+    color: var(--white);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 12px 24px;
+    border: 2px solid var(--white);
+    transition: all 0.2s;
+  }
+  .contact-cta .links a:hover {
+    background: var(--red);
+    border-color: var(--red);
+  }
+
+  /* === FOOTER === */
+  footer {
+    padding: var(--margin);
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--gray);
+  }
+
+  @media (max-width: 768px) {
+    .bio, .approach, .teaching, .role, .exp-header { grid-template-columns: 1fr; }
+    .approach-grid { grid-template-columns: 1fr; }
+    .contact-cta { flex-direction: column; text-align: center; }
+    .contact-cta .links { flex-direction: column; }
+  }
+
+  /* Keyboard focus indicators (accessibility) */
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  *:focus { outline: none; }  /* Remove default only when :focus-visible is supported */
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="name"><a href="index.html" style="text-decoration:none;color:inherit;">Daniel Hennessy</a></div>
+  <ul>
+    <li><a href="index.html">Work</a></li>
+    <li><a href="about.html" class="active" aria-current="page">About</a></li>
+  </ul>
+</nav>
+
+<section class="about-header">
+  <h1>Product designer building things that <span>matter</span></h1>
+</section>
+
+<hr class="divider">
+
+<!-- BIO -->
+<section class="bio">
+  <div class="label">About</div>
+  <div class="content">
+    <p>I'm a product designer who's spent the last decade working on complex systems at scale — from reinventing how millions of people shop for groceries, to designing safety-critical interfaces for delivery vehicle fleets.</p>
+    <p>I lead projects from idea through execution. I run research, facilitate charrettes, partner with engineering and data science teams, and ship features that move business metrics. The work I've led generates billions of dollars in annual revenue, but what I care most about is making things simple and useful for the people who depend on them.</p>
+    <p>Before tech, I spent 6 years in agencies working with brands like American Express, The North Face, Caribou Coffee, and Cannondale. I've taught at Miami Ad School and mentored designers at every company I've been at.</p>
+  </div>
+</section>
+
+<hr class="divider thin">
+
+<!-- EXPERIENCE -->
+<section class="experience">
+  <div class="exp-header">
+    <div class="label">Experience</div>
+    <div></div>
+  </div>
+
+  <div class="role">
+    <div class="role-meta">
+      <div class="company">Amazon</div>
+      <div class="dates">2022 — Present</div>
+    </div>
+    <div class="role-detail">
+      <h3>Lead Product Designer, Safety & Innovation</h3>
+      <p>Leading design for safety features across Amazon's last mile delivery operation — spanning mobile products, digitally connected fleets, and physical touchpoints. Providing design guidance across all UX teams touching last mile to ensure a holistic, safe experience.</p>
+      <div class="highlights">
+        <div class="highlight-stat">
+          <div class="val">27%</div>
+          <div class="desc">Reduction in<br>severe incidents</div>
+        </div>
+        <div class="highlight-stat">
+          <div class="val">97%</div>
+          <div class="desc">Inspection<br>accuracy</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="role">
+    <div class="role-meta">
+      <div class="company">Target</div>
+      <div class="dates">2019 — 2022</div>
+    </div>
+    <div class="role-detail">
+      <h3>Design Lead, Basket Building (Digital Grocery)</h3>
+      <p>Led product design for Target's digital grocery experience across native mobile platforms. Redesigned the shopping tab during the pandemic, launched the "My Usuals" repurchasing feature, and drove a research-led design refresh of the entire experience.</p>
+      <div class="highlights">
+        <div class="highlight-stat">
+          <div class="val">$2.9B</div>
+          <div class="desc">Annual revenue<br>from led projects</div>
+        </div>
+        <div class="highlight-stat">
+          <div class="val">$81.60</div>
+          <div class="desc">Highest AOV<br>in the app</div>
+        </div>
+        <div class="highlight-stat">
+          <div class="val">125K</div>
+          <div class="desc">Monthly orders<br>My Usuals</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="role">
+    <div class="role-meta">
+      <div class="company">Target Creative</div>
+      <div class="dates">2016 — 2019</div>
+    </div>
+    <div class="role-detail">
+      <h3>Lead Designer, Digital Projects</h3>
+      <p>Led design for digital projects across Target's creative organization. Worked full time on Target's Concept Store for 13 months. Co-led signature exit project with store design teams.</p>
+    </div>
+  </div>
+
+  <div class="role">
+    <div class="role-meta">
+      <div class="company">Agency Work</div>
+      <div class="dates">2010 — 2016</div>
+    </div>
+    <div class="role-detail">
+      <h3>Senior Designer / Digital Lead</h3>
+      <p>6 years across multiple agencies. Led major digital projects for American Express, The North Face, Caribou Coffee, Cannondale Bikes, Purina, Dairy Queen, Farm Credit, Mountain Hardware, and more. Consulted on Google's first retail stores while at Latitude. Redesigned Adidas stadium shops for the NHL.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider thin" style="margin-top: clamp(24px, 3vh, 48px);">
+
+<!-- APPROACH -->
+<section class="approach">
+  <div class="label">How I Work</div>
+  <div class="approach-grid">
+    <div class="approach-card">
+      <h4>Research-led</h4>
+      <p>Every project starts with understanding users. I run interviews, facilitate charrettes, and use data to validate assumptions before committing to solutions.</p>
+    </div>
+    <div class="approach-card">
+      <h4>Collaborative</h4>
+      <p>I use design charrettes and working sessions to break through skepticism, build alignment across teams, and create shared ownership of the solution.</p>
+    </div>
+    <div class="approach-card">
+      <h4>Systems thinking</h4>
+      <p>I design platforms and frameworks, not just screens. The goal is always a system that scales, adapts, and stays coherent as it grows.</p>
+    </div>
+    <div class="approach-card">
+      <h4>Ship & learn</h4>
+      <p>I believe in getting work into the world, measuring what matters, and iterating with real data. Earn or learn — either outcome moves you forward.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider thin">
+
+<!-- TEACHING -->
+<section class="teaching">
+  <div class="label">Teaching</div>
+  <div class="content">
+    <p>I taught for 2 years at Miami Ad School and have mentored designers at every stage of their career — from college students at Target to L4 designers on my teams. I believe design leadership means growing the people around you, not just shipping good work.</p>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="contact-cta">
+  <h2>Let's work together</h2>
+  <div class="links">
+    <a href="mailto:sendingdanielemail@gmail.com">Email</a>
+    <a href="https://www.linkedin.com/in/danielhennessy/" target="_blank" rel="noopener">LinkedIn</a>
+  </div>
+</div>
+
+<footer>
+  <span>&copy; 2026 Daniel Hennessy</span>
+</footer>
+
+</body>
+</html>

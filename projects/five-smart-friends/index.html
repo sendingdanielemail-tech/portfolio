@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Five Smart Friends — Landing v4</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #F0EDE8;
+    --black: #111;
+    --white: #fff;
+    --muted: #888883;
+    --border: #D1CEC6;
+    --neon: #D6F533;
+    --cream: #F7F4EF;
+    --sand: #D6CEBB;
+  }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background-color: #fff;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px);
+    background-size: 24px 24px;
+    color: var(--black);
+    overflow-x: hidden;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+  }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+  .nav-right a { text-decoration: none; color: inherit; }
+  .nav-right a:hover { color: var(--black); }
+
+  /* ═══════════════════════════════════════
+     HERO — TYPE + GOLD BLOCK
+     ═══════════════════════════════════════ */
+  .hero {
+    min-height: 90vh;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-left {
+    padding: 60px 48px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .hero-descriptor {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: var(--muted);
+  }
+  .hero-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(72px, 10vw, 140px);
+    text-transform: uppercase;
+    line-height: 0.88;
+    letter-spacing: -2px;
+  }
+  .hero-title .outline-text {
+    -webkit-text-stroke: 2px var(--black);
+    color: transparent;
+  }
+  .hero-subcopy {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 380px;
+  }
+  .hero-cta-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-top: 32px;
+  }
+  .hero-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--black);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    background-image: linear-gradient(var(--neon), var(--neon));
+    background-size: 100% 0.35em;
+    background-position: 0 0.78em;
+    background-repeat: no-repeat;
+  }
+
+  /* Neon highlight accent — marker-style, sits behind the text */
+  .neon-highlight {
+    background-image: linear-gradient(var(--neon), var(--neon));
+    background-size: 100% 0.35em;
+    background-position: 0 0.75em;
+    background-repeat: no-repeat;
+  }
+
+  /* Outline number style — matches hero "FRIENDS" treatment */
+  .outline-num {
+    -webkit-text-stroke: 1.5px var(--black);
+    color: transparent;
+  }
+
+  /* ═══════════════════════════════════════
+     FRIENDS — CLEAN, NO COLOR BLOCKS
+     ═══════════════════════════════════════ */
+  .friends-section {
+    border-bottom: 1px solid var(--border);
+  }
+  .friends-header {
+    display: grid;
+    grid-template-columns: 200px 1fr auto;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .friends-header-label {
+    padding: 18px 40px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--muted);
+    border-right: 1px solid var(--border);
+  }
+  .friends-header-line {
+    padding: 18px 40px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .friends-header-count {
+    padding: 18px 40px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    -webkit-text-stroke: 1.5px var(--black);
+    color: transparent;
+    border-left: 1px solid var(--border);
+    line-height: 1;
+  }
+
+  .friends-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .friend-card {
+    border-right: 1px solid var(--border);
+    padding: 40px 24px 36px;
+    display: flex;
+    flex-direction: column;
+    min-height: 360px;
+  }
+  .friend-card:last-child { border-right: none; }
+
+  .friend-card .card-number {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+  }
+  .friend-card .card-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 24px;
+  }
+  .friend-card .card-icon svg {
+    width: 40px;
+    height: 40px;
+  }
+  .friend-card .card-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .friend-card .card-domain {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  .friend-card .card-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.65;
+    margin-top: 4px;
+  }
+
+  /* ═══════════════════════════════════════
+     HOW IT WORKS — BLACK BLOCK + STEPS
+     ═══════════════════════════════════════ */
+  .how-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .how-left {
+    background: var(--black);
+    color: var(--white);
+    padding: 80px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .how-left h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(48px, 5vw, 72px);
+    font-weight: 800;
+    text-transform: uppercase;
+    line-height: 0.92;
+    letter-spacing: -1px;
+  }
+
+  .how-right {
+    background: #fff;
+  }
+  .how-step {
+    padding: 48px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  .how-step:last-child { border-bottom: none; }
+  .how-step .step-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1;
+    -webkit-text-stroke: 1.5px var(--black);
+    color: transparent;
+  }
+  .how-step h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .how-step p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  /* ═══════════════════════════════════════
+     SAMPLE — BLACK BLOCK + RESPONSES
+     ═══════════════════════════════════════ */
+  .sample-section {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .sample-left {
+    background: var(--black);
+    color: var(--white);
+    padding: 64px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .sample-left .sample-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.35);
+  }
+  .sample-left .sample-question {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-transform: uppercase;
+    margin: 32px 0;
+  }
+  .sample-left .sample-meta {
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+  }
+
+  .sample-right { display: flex; flex-direction: column; }
+
+  .sample-response {
+    padding: 28px 40px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 24px;
+    align-items: start;
+    position: relative;
+  }
+  .sample-response:last-child { border-bottom: none; }
+
+  .sample-response::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--border);
+  }
+
+  .resp-who { display: flex; flex-direction: column; gap: 2px; }
+  .resp-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .resp-num {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .resp-text {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.7;
+  }
+
+  /* ═══════════════════════════════════════
+     CTA — GOLD BLOCK
+     ═══════════════════════════════════════ */
+  .cta-section {
+    background: var(--black);
+    color: var(--white);
+    padding: 100px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-bg-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(120px, 18vw, 280px);
+    font-weight: 900;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.05);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    user-select: none;
+  }
+  .cta-content { position: relative; z-index: 1; }
+  .cta-content h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+    color: var(--white);
+  }
+  .cta-content p {
+    font-size: 15px;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 36px;
+  }
+  .cta-big-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    padding: 18px 56px;
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .cta-big-btn:hover { background: var(--neon); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    padding: 24px 40px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1024px) {
+    .hero { min-height: auto; }
+    .friends-grid { grid-template-columns: repeat(3, 1fr); }
+    .friend-card:nth-child(3) { border-right: none; }
+    .friend-card:nth-child(n+4) { border-top: 1px solid var(--border); }
+    .how-section { grid-template-columns: 1fr; }
+    .sample-section { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .friends-grid { grid-template-columns: 1fr 1fr; }
+    .friend-card { border-right: none !important; border-bottom: 1px solid var(--border); }
+    nav { padding: 16px 20px; }
+    .nav-right a:not(:last-child) { display: none; }
+    .friends-header { grid-template-columns: 1fr; }
+    .friends-header-label { border-right: none; border-bottom: 1px solid var(--border); }
+    .friends-header-count { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Five Smart Friends</div>
+  <div class="nav-right">
+    <a href="#">How It Works</a>
+    <a href="#">The Friends</a>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-descriptor">Decision Making Tool</div>
+    <div>
+      <h1 class="hero-title">
+        FIVE<br>SMART<br><span class="outline-text">FRIENDS</span>
+      </h1>
+    </div>
+    <div>
+      <p class="hero-subcopy">Hear from a philosopher, an economist, a relationship expert, a creative thinker, and a strategist — each with a different lens on your situation.</p>
+      <div class="hero-cta-row">
+        <a href="prototype.html" class="hero-btn">Describe Your Situation</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FRIENDS ═══ -->
+<section class="friends-section">
+  <div class="friends-header">
+    <div class="friends-header-label">The Five</div>
+    <div class="friends-header-line">Five expert friends weigh in — each with a lens the others don't have.</div>
+    <div class="friends-header-count">05</div>
+  </div>
+  <div class="friends-grid">
+
+    <div class="friend-card">
+      <div class="card-number">01</div>
+      <div class="card-icon">
+        <svg viewBox="0 0 48 48" fill="none" stroke="var(--black)" stroke-width="1.5" stroke-linecap="round">
+          <line x1="10" y1="16" x2="10" y2="38"/><line x1="19" y1="16" x2="19" y2="38"/>
+          <line x1="29" y1="16" x2="29" y2="38"/><line x1="38" y1="16" x2="38" y2="38"/>
+          <line x1="4" y1="38" x2="44" y2="38"/>
+          <polyline points="4,16 24,4 44,16"/><line x1="4" y1="16" x2="44" y2="16"/>
+        </svg>
+      </div>
+      <div class="card-name">Philosopher</div>
+      <div class="card-domain">Meaning & values</div>
+      <div class="card-desc">Examines your values, assumptions, and what this decision says about the life you want to build.</div>
+    </div>
+
+    <div class="friend-card">
+      <div class="card-number">02</div>
+      <div class="card-icon">
+        <svg viewBox="0 0 48 48" fill="none" stroke="var(--black)" stroke-width="1.5" stroke-linecap="round">
+          <line x1="6" y1="42" x2="42" y2="42"/><line x1="6" y1="42" x2="6" y2="6"/>
+          <rect x="12" y="26" width="7" height="16" rx="1"/>
+          <rect x="22" y="18" width="7" height="24" rx="1"/>
+          <rect x="32" y="12" width="7" height="30" rx="1"/>
+        </svg>
+      </div>
+      <div class="card-name">Economist</div>
+      <div class="card-domain">Costs & trade-offs</div>
+      <div class="card-desc">Runs the numbers. Thinks in opportunity costs, incentive structures, and second-order effects.</div>
+    </div>
+
+    <div class="friend-card">
+      <div class="card-number">03</div>
+      <div class="card-icon">
+        <svg viewBox="0 0 48 48" fill="none" stroke="var(--black)" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="24" cy="10" r="6"/><circle cx="10" cy="36" r="6"/><circle cx="38" cy="36" r="6"/>
+          <line x1="20" y1="15" x2="14" y2="31"/><line x1="28" y1="15" x2="34" y2="31"/>
+          <line x1="16" y1="36" x2="32" y2="36"/>
+        </svg>
+      </div>
+      <div class="card-name">Relationships</div>
+      <div class="card-domain">Ripple effects</div>
+      <div class="card-desc">Sees the human impact. Maps the emotional landscape that spreadsheets can't capture.</div>
+    </div>
+
+    <div class="friend-card">
+      <div class="card-number">04</div>
+      <div class="card-icon">
+        <svg viewBox="0 0 48 48" fill="none" stroke="var(--black)" stroke-width="1.5" stroke-linecap="round">
+          <path d="M16 30 C16 24 10 20 10 14 A14 14 0 0 1 38 14 C38 20 32 24 32 30"/>
+          <line x1="16" y1="30" x2="32" y2="30"/>
+          <line x1="18" y1="34" x2="30" y2="34"/>
+          <line x1="20" y1="38" x2="28" y2="38"/>
+        </svg>
+      </div>
+      <div class="card-name">Creative</div>
+      <div class="card-domain">Possibilities</div>
+      <div class="card-desc">Flips the script. Finds the third option nobody mentioned and reframes the question entirely.</div>
+    </div>
+
+    <div class="friend-card">
+      <div class="card-number">05</div>
+      <div class="card-icon">
+        <svg viewBox="0 0 48 48" fill="none" stroke="var(--black)" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="24" cy="24" r="18"/><circle cx="24" cy="24" r="7"/>
+          <line x1="24" y1="2" x2="24" y2="12"/><line x1="24" y1="36" x2="24" y2="46"/>
+          <line x1="2" y1="24" x2="12" y2="24"/><line x1="36" y1="24" x2="46" y2="24"/>
+        </svg>
+      </div>
+      <div class="card-name">Strategist</div>
+      <div class="card-domain">Path forward</div>
+      <div class="card-desc">Synthesizes everything. Identifies the highest-leverage move and builds a concrete plan.</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="how-section">
+  <div class="how-left">
+    <h2>HOW IT<br>WORKS</h2>
+  </div>
+  <div class="how-right">
+    <div class="how-step">
+      <div class="step-num">01</div>
+      <div>
+        <h3>Tell Us What You're Weighing</h3>
+        <p>A career change, a relationship crossroads, a financial choice — anything keeping you up at night. No sign-up, no setup.</p>
+      </div>
+    </div>
+    <div class="how-step">
+      <div class="step-num">02</div>
+      <div>
+        <h3>Five Minds Weigh In</h3>
+        <p>Each friend analyzes your situation through their unique lens. They don't agree with each other — that's the point.</p>
+      </div>
+    </div>
+    <div class="how-step">
+      <div class="step-num">03</div>
+      <div>
+        <h3>See the Full Picture</h3>
+        <p>Get a ranked recommendation with all five perspectives synthesized. You decide — but now you see every angle you were missing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SAMPLE ═══ -->
+<section class="sample-section">
+  <div class="sample-left">
+    <div class="sample-label">Example</div>
+    <div class="sample-question">"Should I leave my stable job to start a company?"</div>
+    <div class="sample-meta">5 perspectives · 47 seconds</div>
+  </div>
+  <div class="sample-right">
+    <div class="sample-response">
+      <div class="resp-who"><div class="resp-name">Philosopher</div><div class="resp-num">01</div></div>
+      <div class="resp-text">"Before we talk about the startup — what does meaningful work actually look like to you? Because if it's autonomy you want, there may be paths that don't require burning everything down."</div>
+    </div>
+    <div class="sample-response">
+      <div class="resp-who"><div class="resp-name">Economist</div><div class="resp-num">02</div></div>
+      <div class="resp-text">"Your runway is 14 months at current burn. But factor in health insurance, the equity you're leaving, and opportunity cost — the real runway is closer to 9."</div>
+    </div>
+    <div class="sample-response">
+      <div class="resp-who"><div class="resp-name">Relationship</div><div class="resp-num">03</div></div>
+      <div class="resp-text">"You keep saying 'my decision' but your partner's career flexibility is funding this risk. That's not a problem — it's a conversation you haven't had yet."</div>
+    </div>
+    <div class="sample-response">
+      <div class="resp-who"><div class="resp-name">Creative</div><div class="resp-num">04</div></div>
+      <div class="resp-text">"What if you didn't quit? Build the MVP nights and weekends for 90 days. If you can't find that energy, the startup wasn't the answer."</div>
+    </div>
+    <div class="sample-response">
+      <div class="resp-who"><div class="resp-name">Strategist</div><div class="resp-num">05</div></div>
+      <div class="resp-text">"Negotiate a 3-month sabbatical. You keep the safety net, you get real signal, and you avoid the false binary everyone else is stuck on."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta-section">
+  <div class="cta-bg-text">DECIDE</div>
+  <div class="cta-content">
+    <h2>What Are You Weighing?</h2>
+    <p>No sign-up required. Five perspectives in under a minute.</p>
+    <a href="prototype.html" class="cta-big-btn" style="display:inline-block;text-decoration:none;">Try It Now</a>
+  </div>
+</section>
+
+<footer>
+  <span>Five Smart Friends</span>
+  <span>A Decision Making Tool</span>
+  <span>2026</span>
+</footer>
+
+</body>
+</html>

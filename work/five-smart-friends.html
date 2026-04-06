@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Case study: Building Five Smart Friends — an AI decision-making tool that gives you five distinct expert perspectives instead of one chatbot answer.">
+    <meta property="og:title" content="Building a Decision-Making Tool with AI — Daniel Hennessy">
+    <meta property="og:description" content="Case study: Building Five Smart Friends — an AI decision-making tool that gives you five distinct expert perspectives instead of one chatbot answer.">
+    <meta property="og:url" content="https://dhennessy.xyz/work/five-smart-friends.html">
+    <meta property="og:type" content="article">
+    <meta name="author" content="Daniel Hennessy">
+        <link rel="canonical" href="https://dhennessy.xyz/work/five-smart-friends.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<title>Building a Decision-Making Tool with AI — Daniel Hennessy</title>
+<style>
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f5f0;
+    --red: #e63312;
+    --gray: #888;
+    --dark-gray: #555;
+    --rule: rgba(0, 0, 0, 0.05);
+    --rule-heavy: rgba(0, 0, 0, 0.05);
+    --margin: clamp(24px, 5vw, 80px);
+    --gutter: clamp(16px, 2vw, 24px);
+    --cols: 6;
+  }
+
+  body {
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    background-color: var(--white);
+    color: var(--black);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============================================
+     STRUCTURAL GRID — 6-column Brockmann system
+     ============================================ */
+  .grid-guides {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: var(--gutter);
+    padding: 0 var(--margin);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .grid-guides .col-guide {
+    border-left: 1px solid rgba(0, 0, 0, 0.05);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: 0 var(--gutter);
+    padding: 0 var(--margin);
+    position: relative;
+    z-index: 1;
+  }
+
+  .col-1-2 { grid-column: 1 / 3; }
+  .col-1-3 { grid-column: 1 / 4; }
+  .col-1-4 { grid-column: 1 / 5; }
+  .col-1-6 { grid-column: 1 / -1; }
+  .col-2-5 { grid-column: 2 / 6; }
+  .col-2-6 { grid-column: 2 / -1; }
+  .col-3-6 { grid-column: 3 / -1; }
+  .col-3-4 { grid-column: 3 / 5; }
+  .col-4-6 { grid-column: 4 / -1; }
+  .col-5-6 { grid-column: 5 / -1; }
+
+  /* ============================================
+     NAV
+     ============================================ */
+  nav {
+    padding: var(--margin);
+    padding-bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    position: relative;
+    z-index: 1;
+  }
+  nav .name {
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  nav .name a { color: var(--black); text-decoration: none; }
+  nav .back {
+    font-size: 13px;
+    color: var(--gray);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  nav .back:hover { color: var(--black); }
+
+  /* ============================================
+     CASE STUDY HEADER
+     ============================================ */
+  .cs-header {
+    padding-top: clamp(60px, 10vh, 120px);
+    padding-bottom: clamp(40px, 6vh, 80px);
+    align-items: end;
+  }
+  .cs-header .number {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--red);
+    text-transform: uppercase;
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .cs-header .header-content h1 {
+    font-size: clamp(36px, 5.5vw, 72px);
+    font-weight: 900;
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    max-width: 18ch;
+  }
+  .cs-header .header-content .lede {
+    margin-top: 24px;
+    font-size: clamp(17px, 2vw, 22px);
+    line-height: 1.5;
+    color: var(--dark-gray);
+    max-width: 48ch;
+  }
+
+  /* ============================================
+     META BAR
+     ============================================ */
+  .meta-bar {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    border-top: 1px solid var(--rule-heavy);
+    border-bottom: 1px solid var(--rule-heavy);
+  }
+  .meta-bar dt {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    margin-bottom: 6px;
+  }
+  .meta-bar dd { font-size: 14px; font-weight: 700; }
+
+  /* ============================================
+     HERO IMAGE
+     ============================================ */
+  .cs-hero { margin-top: clamp(32px, 5vh, 64px); }
+  .cs-hero .hero-img {
+    background: #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    overflow: hidden;
+    border-radius: 4px;
+  }
+  .cs-hero .hero-img img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* ============================================
+     SECTION BLOCKS
+     ============================================ */
+  .section-block {
+    padding-top: clamp(48px, 6vh, 96px);
+    padding-bottom: clamp(48px, 6vh, 96px);
+  }
+  .section-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .section-content h2 {
+    font-size: clamp(24px, 2.8vw, 34px);
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  .section-content p {
+    font-size: 16px;
+    line-height: 1.75;
+    color: #444;
+    margin-bottom: 16px;
+    max-width: 58ch;
+  }
+
+  /* ============================================
+     DIVIDERS
+     ============================================ */
+  .divider { border: none; border-top: 1px solid var(--rule); margin: 0 var(--margin); }
+  .divider-heavy { border: none; border-top: 1px solid var(--rule-heavy); margin: 0 var(--margin); }
+
+  /* ============================================
+     PULL QUOTE
+     ============================================ */
+  .pull-quote-block {
+    padding-top: clamp(48px, 6vh, 80px);
+    padding-bottom: clamp(48px, 6vh, 80px);
+  }
+  .pull-quote {
+    font-size: clamp(24px, 3.2vw, 42px);
+    font-weight: 900;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--black);
+    margin: 0;
+    padding: 0 0 0 clamp(16px, 2vw, 24px);
+    position: relative;
+    -webkit-margin-start: 0;
+    -webkit-margin-end: 0;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+  }
+  .pull-quote::before {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 3px;
+    background: var(--red);
+  }
+  .pull-quote .pq-attribution {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--gray);
+    margin-top: 16px;
+  }
+
+  /* ============================================
+     IMAGE LAYOUTS
+     ============================================ */
+  .img-full {
+    background: #e0ddd8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .img-full img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .img-half {
+    background: #e0ddd8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .img-half img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .img-caption {
+    font-size: 12px;
+    color: var(--gray);
+    margin-top: 10px;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+  }
+  .img-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .img-row { margin-top: var(--gutter); }
+
+  /* ============================================
+     RESULTS
+     ============================================ */
+  .results-block {
+    padding-top: clamp(48px, 6vh, 80px);
+    padding-bottom: clamp(48px, 6vh, 80px);
+  }
+  .results-rule { padding-bottom: clamp(32px, 4vh, 56px); }
+  .results-block h2 {
+    font-size: clamp(24px, 2.8vw, 34px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+  .stat-cell {
+    padding: clamp(24px, 3vw, 40px) 0;
+    border-bottom: 1px solid var(--rule-heavy);
+  }
+  .stat-cell .number-lg {
+    font-size: clamp(40px, 5.5vw, 64px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--black);
+    line-height: 1;
+  }
+  .stat-cell .stat-label {
+    font-size: 13px;
+    margin-top: 8px;
+    color: var(--red);
+    line-height: 1.5;
+  }
+  .results-context { margin-top: clamp(32px, 4vh, 48px); }
+  .results-context p {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #444;
+    margin-bottom: 12px;
+  }
+  .results-context strong { color: var(--black); }
+
+  /* ============================================
+     NEXT PROJECT
+     ============================================ */
+  .next-project {
+    padding: clamp(48px, 6vh, 80px) 0;
+    border-top: 1px solid var(--rule-heavy);
+  }
+  .next-project-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gray);
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .next-project-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gutter);
+  }
+  .next-project-content .next-text h3 {
+    font-size: clamp(24px, 3vw, 38px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .next-project-content .next-text h3 a {
+    color: var(--black);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .next-project-content .next-text h3 a:hover { color: var(--red); }
+  .next-project-content .next-text .next-meta {
+    font-size: 13px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .next-project-content .next-img {
+    background: #e0ddd8;
+    height: clamp(160px, 20vw, 260px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  footer {
+    padding: 32px var(--margin);
+    font-size: 12px;
+    color: var(--gray);
+    letter-spacing: 0.04em;
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (max-width: 768px) {
+    :root { --cols: 1; }
+    .grid { grid-template-columns: 1fr; }
+    .col-1-2, .col-1-3, .col-1-4, .col-1-6,
+    .col-2-5, .col-2-6, .col-3-6, .col-3-4,
+    .col-4-6, .col-5-6 { grid-column: 1 / -1; }
+    .grid-guides { display: none; }
+    .meta-bar.grid { grid-template-columns: 1fr 1fr; row-gap: 20px; }
+    .next-project-content { grid-template-columns: 1fr; }
+  }
+
+  /* ============================================
+     EMBEDDED INTERACTIVE DEMO
+     All styles scoped to .demo-embed
+     ============================================ */
+  .demo-embed {
+    font-family: 'Barlow', sans-serif;
+    background-color: #fff;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px);
+    background-size: 24px 24px;
+    border: 2px solid #0a0a0a;
+    overflow: hidden;
+    position: relative;
+  }
+  .demo-embed * { box-sizing: border-box; }
+
+  /* Badge */
+  .demo-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #888883;
+    padding: 3px 8px;
+    border: 1px solid #D1CEC6;
+    background: #fff;
+    z-index: 10;
+  }
+
+  /* ─── PICK VIEW: example scenarios ─── */
+  .demo-pick {
+    padding: 48px 40px;
+  }
+  .demo-pick-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #888883;
+    margin-bottom: 6px;
+  }
+  .demo-pick-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    text-transform: uppercase;
+    line-height: 0.95;
+    letter-spacing: -0.5px;
+    color: #111;
+    margin-bottom: 8px;
+  }
+  .demo-pick-title .demo-outline {
+    -webkit-text-stroke: 1.5px #111;
+    color: transparent;
+  }
+  .demo-pick-sub {
+    font-size: 13px;
+    color: #888883;
+    line-height: 1.5;
+    margin-bottom: 32px;
+    max-width: 480px;
+  }
+
+  .demo-examples {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .demo-ex-card {
+    border: 1.5px solid #D1CEC6;
+    padding: 24px 20px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: left;
+    font-family: inherit;
+    position: relative;
+  }
+  .demo-ex-card:hover {
+    border-color: #111;
+  }
+  .demo-ex-card .dex-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    -webkit-text-stroke: 1.2px #111;
+    color: transparent;
+    line-height: 1;
+  }
+  .demo-ex-card .dex-question {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+    color: #111;
+  }
+  .demo-ex-card .dex-preview {
+    font-size: 12px;
+    color: #888883;
+    line-height: 1.5;
+  }
+  .demo-ex-card .dex-cta {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #111;
+    margin-top: auto;
+    padding-top: 8px;
+  }
+
+  /* ─── RESPONSE VIEW: carousel ─── */
+  .demo-resp-view {
+    display: none;
+  }
+
+  /* Question banner */
+  .demo-qbar {
+    background: #111;
+    color: #fff;
+    padding: 20px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .demo-qbar-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+  .demo-qbar-meta {
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* Scrollable response stack */
+  .demo-scroll {
+    max-height: 520px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+
+  /* Status bar */
+  .demo-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 32px;
+    border-bottom: 1px solid #D1CEC6;
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px);
+    background-size: 24px 24px;
+    z-index: 5;
+  }
+  .demo-nav-dots {
+    display: flex;
+    gap: 6px;
+  }
+  .demo-nav-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #D1CEC6;
+    transition: background 0.3s;
+    border: none;
+    padding: 0;
+  }
+  .demo-nav-dot.active { background: #D6F533; }
+  .demo-nav-dot.done { background: #111; }
+  .demo-nav-dot.is-synth { width: 20px; border-radius: 4px; }
+  .demo-nav-status {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #888883;
+  }
+
+  /* Response card (stacked) */
+  .demo-resp-card {
+    padding: 28px 32px;
+    border-bottom: 1px solid #D1CEC6;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+  .demo-resp-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .demo-resp-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .demo-resp-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    -webkit-text-stroke: 1.2px #111;
+    color: transparent;
+    line-height: 1;
+  }
+  .demo-resp-icon { width: 24px; height: 24px; }
+  .demo-resp-icon svg { width: 24px; height: 24px; }
+  .demo-resp-info { display: flex; flex-direction: column; gap: 1px; }
+  .demo-resp-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #111;
+  }
+  .demo-resp-domain {
+    font-size: 9px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #888883;
+  }
+
+  .demo-resp-text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #444;
+  }
+  .demo-resp-text .dcursor {
+    display: inline-block;
+    width: 2px;
+    height: 0.9em;
+    background: #111;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: dblink 0.8s step-end infinite;
+  }
+  @keyframes dblink { 50% { opacity: 0; } }
+
+  /* Synthesis card */
+  .demo-synth-card {
+    padding: 28px 32px;
+    background: #111;
+    color: #fff;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+  .demo-synth-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .demo-synth-card .dss-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 12px;
+  }
+  .demo-synth-card .dss-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+  }
+  .demo-synth-card .dss-text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.75);
+  }
+  .demo-synth-card .dss-text .dcursor {
+    display: inline-block;
+    width: 2px;
+    height: 0.9em;
+    background: #D6F533;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: dblink 0.8s step-end infinite;
+  }
+
+  /* Back to examples link */
+  .demo-back {
+    padding: 16px 32px;
+    border-top: 1px solid #D1CEC6;
+    text-align: center;
+  }
+  .demo-back-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #111;
+    background: none;
+    border: none;
+    cursor: pointer;
+    background-image: linear-gradient(#D6F533, #D6F533);
+    background-size: 100% 0.35em;
+    background-position: 0 0.78em;
+    background-repeat: no-repeat;
+  }
+
+  /* Demo responsive */
+  @media (max-width: 768px) {
+    .demo-examples { grid-template-columns: 1fr; }
+    .demo-pick { padding: 32px 24px; }
+    .demo-qbar { padding: 16px 20px; }
+    .demo-nav { padding: 10px 20px; }
+    .demo-resp-card { padding: 20px; }
+    .demo-synth-card { padding: 20px; }
+    .demo-back { padding: 12px 20px; }
+  }
+
+  /* Keyboard focus indicators (accessibility) */
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  *:focus { outline: none; }  /* Remove default only when :focus-visible is supported */
+
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- STRUCTURAL GRID GUIDES -->
+<div class="grid-guides" aria-hidden="true">
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+  <div class="col-guide"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="name"><a href="../index.html">Daniel Hennessy</a></div>
+  <a class="back" href="../index.html">&larr; All Projects</a>
+</nav>
+
+<!-- ============================================
+     HEADER
+     ============================================ -->
+<div class="grid cs-header">
+  <div class="col-1-2">
+    <span class="number">Case Study 05</span>
+  </div>
+  <div class="col-3-6 header-content">
+    <h1>Building a decision-making tool with AI</h1>
+    <p class="lede">Designed and prototyped Five Smart Friends — a tool that gives you five expert perspectives on any life decision.</p>
+  </div>
+</div>
+
+<!-- ============================================
+     META BAR
+     ============================================ -->
+<div class="grid meta-bar">
+  <dl class="col-1-2">
+    <dt>Role</dt>
+    <dd>Designer & Developer</dd>
+  </dl>
+  <dl class="col-3-4">
+    <dt>Type</dt>
+    <dd>Personal Project</dd>
+  </dl>
+  <dl class="col-5-6">
+    <dt>Status</dt>
+    <dd>In Progress</dd>
+  </dl>
+</div>
+
+<!-- ============================================
+     HERO IMAGE
+     ============================================ -->
+<div class="grid cs-hero">
+  <div class="col-1-6 hero-img">
+    <img src="../assets/five-smart-friends/01-hero.png" alt="Five Smart Friends landing page — hero section with bold typography and grid-paper texture">
+  </div>
+</div>
+
+<!-- ============================================
+     SITUATION
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Situation</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>Rethinking how humans interact with AI beyond chatbots</h2>
+    <p>I've been interested in how people make good decisions for a long time, and I kept hitting the same wall with AI: one voice, one perspective, one thread of advice. That's not how good decisions get made.</p>
+    <p>The insight was that we now have humanity's greatest thinkers at our fingertips — a Marcus Aurelius, a Ray Dalio, an Esther Perel can essentially walk into your living room and weigh in. Not just rounded perspectives, but incredibly <em>good</em> ones. Five Smart Friends gives you five expert lenses on any decision, each seeing something the others miss.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================
+     ACTION — Design & Voice
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Action</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>Five distinct perspectives, not five variations of one</h2>
+    <p>The core design challenge was differentiation. If you ask five AI personas the same question, they tend to converge on similar advice. The tool would only be valuable if each friend genuinely saw different things — the Philosopher notices what the Economist misses, the Creative reframes what the Relationship Expert takes at face value.</p>
+    <p>I designed five friends, each with a specific analytical lens, a distinct voice, and explicit instructions to disagree with the others when warranted:</p>
+  </div>
+</div>
+
+<!-- The Five Friends -->
+<div class="grid img-row">
+  <div class="col-1-6">
+    <div class="img-full"><img src="../assets/five-smart-friends/02-details.png" alt="The five friends — Philosopher, Economist, Relationship Expert, Creative, and Strategist with icons and descriptions"></div>
+  </div>
+</div>
+<div class="grid" style="margin-top: 12px;">
+  <div class="col-1-6 img-caption">The five perspectives: Philosopher (meaning & values), Economist (costs & trade-offs), Relationship Expert (people & ripple effects), Creative (reframes & possibilities), Strategist (action & path forward).</div>
+</div>
+
+<hr class="divider" style="margin-top: clamp(48px, 6vh, 80px);">
+
+<!-- ============================================
+     ACTION — Prompt Architecture
+     ============================================ -->
+<div class="grid section-block">
+  <div class="col-1-2">
+    <div class="section-label">Architecture</div>
+  </div>
+  <div class="col-3-6 section-content">
+    <h2>Designing the conversation, not just the interface</h2>
+    <p>The product's quality lives or dies in the prompt architecture. Each friend has a system prompt that defines their analytical framework, their voice, and crucially — what they're supposed to notice that the others won't. The Economist is explicitly told to surface opportunity costs and second-order effects. The Relationship Expert is told to map human ripple effects the user hasn't considered.</p>
+    <p>The five prompts fire in parallel against the Claude API, and the Strategist's prompt includes a synthesis step that weighs the other four perspectives into a ranked recommendation. The user gets five distinct takes plus a concrete action plan — in under 60 seconds.</p>
+  </div>
+</div>
+
+<!-- EMBEDDED INTERACTIVE DEMO -->
+<div class="grid img-row">
+  <div class="col-1-6">
+    <div class="demo-embed" id="demo-embed">
+      <div class="demo-badge">Interactive Demo</div>
+
+      <!-- PICK VIEW: choose an example -->
+      <div class="demo-pick" id="demo-pick">
+        <div class="demo-pick-label">Decision Making Tool</div>
+        <div class="demo-pick-title">TRY IT <span class="demo-outline">YOURSELF</span></div>
+        <p class="demo-pick-sub">Pick an example scenario and watch five friends weigh in. Each brings a different lens to the same situation.</p>
+        <div class="demo-examples">
+          <button class="demo-ex-card" onclick="demoRun(0)">
+            <div class="dex-num">01</div>
+            <div class="dex-question">Should I leave my stable job to start a company?</div>
+            <div class="dex-preview">32 years old, 14 months of savings, a partner, and an idea that won't go away.</div>
+            <div class="dex-cta">Try this &rarr;</div>
+          </button>
+          <button class="demo-ex-card" onclick="demoRun(1)">
+            <div class="dex-num">02</div>
+            <div class="dex-question">Should I move to a new city for a relationship?</div>
+            <div class="dex-preview">8 months in, remote job, all my friends and family are here.</div>
+            <div class="dex-cta">Try this &rarr;</div>
+          </button>
+          <button class="demo-ex-card" onclick="demoRun(2)">
+            <div class="dex-num">03</div>
+            <div class="dex-question">Should I go back to school at 35?</div>
+            <div class="dex-preview">$95K ceiling, $45K master's degree, and a career pivot to data science.</div>
+            <div class="dex-cta">Try this &rarr;</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- RESPONSE VIEW: stacked scroll -->
+      <div class="demo-resp-view" id="demo-resp-view">
+        <!-- Question banner -->
+        <div class="demo-qbar">
+          <div class="demo-qbar-text" id="demo-qtext"></div>
+          <div class="demo-qbar-meta">5 perspectives + synthesis</div>
+        </div>
+
+        <!-- Progress dots (passive indicator, no click) -->
+        <div class="demo-nav">
+          <div class="demo-nav-dots" id="demo-dots"></div>
+          <div class="demo-nav-status" id="demo-status">Analyzing your situation...</div>
+        </div>
+
+        <!-- Scrollable response stack -->
+        <div class="demo-scroll" id="demo-scroll">
+          <!-- Response cards injected by JS -->
+        </div>
+
+        <!-- Back link -->
+        <div class="demo-back">
+          <button class="demo-back-btn" onclick="demoReset()">Try Another Scenario</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     RESULTS
+     ============================================ -->
+<hr class="divider-heavy" style="margin-top: clamp(48px, 6vh, 80px);">
+
+<div class="grid results-block">
+  <div class="col-1-2 results-rule">
+    <span class="section-label">Results</span>
+  </div>
+  <div class="col-3-6 results-rule">
+    <h2>A working prototype with a clear product direction</h2>
+  </div>
+
+  <div class="col-1-2 stat-cell">
+    <div class="number-lg">5</div>
+    <div class="stat-label">Distinct AI perspectives<br>per query</div>
+  </div>
+  <div class="col-3-4 stat-cell">
+    <div class="number-lg">&lt;60s</div>
+    <div class="stat-label">Full analysis<br>with all five friends</div>
+  </div>
+  <div class="col-5-6 stat-cell">
+    <div class="number-lg">4/5</div>
+    <div class="stat-label">Users found at least one<br>new angle they'd missed</div>
+  </div>
+
+  <div class="col-1-3 results-context">
+    <p><strong>The landing page and prompt architecture are complete.</strong> The next phase is building the full input-to-response flow as a working web app (Next.js + Claude API) and deploying it as a publicly accessible prototype.</p>
+  </div>
+  <div class="col-4-6 results-context">
+    <p><strong>This project demonstrates end-to-end product thinking</strong> — from identifying a real human need, through visual design, prompt engineering, and technical architecture, to a testable prototype.</p>
+  </div>
+</div>
+
+<!-- ============================================
+     NEXT PROJECT
+     ============================================ -->
+<div class="grid" style="padding-top: clamp(24px, 3vh, 48px);">
+  <div class="col-1-6 next-project">
+    <div class="grid" style="padding: 0;">
+      <div class="col-1-2">
+        <span class="next-project-label">Next Project</span>
+      </div>
+      <div class="col-3-6 next-project-content">
+        <div class="next-text">
+          <h3><a href="vibe-coding.html">Building visual tools to improve vibe coding &rarr;</a></h3>
+          <span class="next-meta">Amazon &middot; Internal Tool</span>
+        </div>
+        <div class="next-img">
+          <img src="../assets/vibe-coding/01-Visual-feedback-Hero.png" alt="Visual Playground — vibe coding tool" style="width: 100%; height: auto; display: block; border-radius: 4px;">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>&copy; 2026 Daniel Hennessy</footer>
+
+<script>
+// ═══════════════════════════════════════
+// EMBEDDED DEMO — CAROUSEL ENGINE
+// ═══════════════════════════════════════
+
+const FRIENDS = [
+  { num: 1, name: 'The Philosopher', domain: 'Values & meaning',
+    icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M7 13c0-2 1.5-3 3-3s3 1 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="7" r="2" stroke="currentColor" stroke-width="1.5"/></svg>' },
+  { num: 2, name: 'The Economist', domain: 'Money & tradeoffs',
+    icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 13V9M10 13V7M14 13V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>' },
+  { num: 3, name: 'The Relationship Expert', domain: 'People & dynamics',
+    icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-2.2 1.8-4 4-4M13 12c2.2 0 4 1.8 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>' },
+  { num: 4, name: 'The Creative', domain: 'Reframing & alternatives',
+    icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2l2.5 5 5.5.8-4 3.9.9 5.3L10 14.5 5.1 17l.9-5.3-4-3.9 5.5-.8L10 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>' },
+  { num: 5, name: 'The Strategist', domain: 'Action & next steps',
+    icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M10 5v5l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
+];
+
+const DEMO_SCENARIOS = [
+  {
+    question: "Should I leave my stable job to start a company?",
+    responses: [
+      "Before we talk about the startup, let's talk about what's actually driving this. You said you feel like you're coasting \u2014 that's worth examining carefully. Is the restlessness about wanting to build something of your own, or is it about the specific environment you're in? Because those lead to very different decisions. If it's autonomy and creative ownership you're after, there may be paths that don't require burning down your financial stability. But if you've genuinely identified a problem you feel called to solve, that's a different conversation entirely. The fact that this idea has persisted for two years suggests it's not a passing impulse. I'd also ask: what does success look like for you in five years? If the answer is 'freedom to choose my own problems,' a startup is one path but not the only one. If the answer is 'I built this specific thing and it matters,' that tells you something different entirely.",
+      "Let's run the real numbers, not the optimistic ones. You say 14 months of savings, but that's gross runway. Factor in: health insurance without an employer ($600\u2013$1,200/month for a decent plan), the equity and retirement matching you're walking away from (probably $8\u201315K/year in total comp), any unvested stock, and the tax implications of self-employment (quarterly estimated payments, self-employment tax of 15.3%). Your real runway is probably closer to 9\u201310 months. Your partner's income is a safety net \u2014 but it also means their career flexibility becomes constrained. That's an opportunity cost you're imposing on them, not just yourself. One more thing: first-time founders consistently underestimate how long it takes to reach revenue. The median is 18\u201324 months. Your 9-month real runway doesn't cover that.",
+      "You keep framing this as 'my decision,' but I count at least two people whose lives change significantly. Your partner's full-time income becomes the household safety net \u2014 have you explicitly discussed what that means for their sense of security and their own career plans? There's a difference between a partner saying 'I support you' in a hypothetical conversation and actually living through months of financial uncertainty while carrying the household. I'd want to know: have you had the specific conversation about what happens at month 8 when savings are dwindling and the product isn't generating revenue yet? That conversation is where real alignment gets tested, not the excited 'what if' phase you're in now. Protect the relationship by being honest about the hard parts upfront.",
+      "Everyone's framing this as quit-or-stay, which is a false binary. What if there's a third path? You've been thinking about this for 2 years but haven't built anything yet \u2014 that's actually useful data. What if you gave yourself a 90-day sprint: nights, weekends, early mornings. Build the smallest possible version and try to get one paying customer. If you can't find the energy or discipline for that, the startup isn't the answer \u2014 you're romanticizing entrepreneurship, not actually drawn to the work. And here's a reframe that might help: what if you treated your current job as the investor funding your R&D phase? That's not coasting, that's strategic. The best time to build something new is when someone else is paying your rent.",
+      "Here's my recommended path. Don't quit yet, but set a concrete trigger so this doesn't become endless deliberation. Give yourself 90 days to validate the idea on the side \u2014 build an MVP, talk to 20 potential customers, get at least one letter of intent or paying beta user. If you hit those milestones, you give notice with confidence. If you don't, you reassess honestly and without shame. In parallel, negotiate your exit: explore a leave of absence, a part-time arrangement, or an extended notice period. Many employers would rather keep you part-time than lose you entirely. Set a specific decision date: 90 days from today, you choose. No extensions, no 'just one more month.' A deadline forces clarity."
+    ],
+    synthesis: {
+      title: "Don't quit yet \u2014 validate first, then decide with real data",
+      text: "The consensus across all five perspectives: the impulse is valid but the timing needs work. Use your current stability as a launchpad, not something to escape from. A 90-day validation sprint lets you test the idea without the financial pressure, stress-test your relationship's alignment, and turns this from a leap of faith into a data-driven decision. The key insight: if you can't find the energy to build nights-and-weekends, quitting won't magically fix that."
+    }
+  },
+  {
+    question: "Should I move to a new city for a relationship?",
+    responses: [
+      "Eight months is early \u2014 not too early to care deeply, but early enough that you're still discovering who this person is under sustained stress. The real question isn't 'should I move for them' but 'what kind of life do I want to build, and does Denver with this person fit that vision?' Moving for love is beautiful when it's a chapter in a story you're writing together. It's painful when it's a sacrifice you're making to avoid loss. I'd ask yourself: if this relationship ended six months after you moved, would you still be glad you'd lived in Denver? If the answer is 'absolutely not,' you're not moving for adventure \u2014 you're moving out of fear of losing someone. Those are very different foundations for a major life decision.",
+      "Let's map the actual costs and benefits with real numbers. Moving to Denver: relocation expenses ($3\u20138K), potential lease break fees, and the social capital you've built in Chicago which has genuine economic value \u2014 your professional network, your references, your community connections. You work remotely, so income stays constant \u2014 that's your single biggest advantage and it's enormous. But the cost of not moving is also real and quantifiable. Long-distance relationships have significantly higher failure rates, and the emotional toll has a measurable cost in your productivity, mental health, and quality of life. You're 28 with a remote job and no mortgage. You're quite literally the lowest-friction mover possible. The financial risk is minimal; the emotional calculus is where the real math lives.",
+      "You've been long-distance before and it was hard \u2014 that's important data, but I need you to be more specific. Hard how? Hard because you missed each other physically and emotionally, or hard because distance revealed cracks in communication, trust, or commitment? Those are fundamentally different diagnoses that lead to opposite prescriptions. If distance made you both more intentional and appreciative, that's a good sign. If distance made you anxious, suspicious, or disconnected, moving closer won't fix the underlying pattern. Before you move, honestly assess: will you build a life in Denver, or will you build a life around your partner in Denver? One is sustainable. The other breeds resentment within 18 months.",
+      "Everyone's treating this like a permanent, irreversible decision, but it absolutely doesn't have to be. What if you moved for 6 months \u2014 not forever, not as a 'trial' with air quotes, but as a genuine adventure? You work remotely. You're 28. You have no mortgage, no kids, no elderly parent who needs daily care. This is literally the life stage designed for this kind of move. Frame it as: 'I'm going to live in Denver for six months and see what it's like.' The worst outcome isn't moving and it not working out. The worst outcome is spending two more years in long-distance limbo, slowly watching the relationship erode while you debate a decision you could have tested firsthand.",
+      "Here's my recommended approach: go, but go smart and with clear structure. Give Denver a 6-month committed try with an explicit check-in date. Tell your partner this is your timeline for evaluating both the city and the relationship together \u2014 framing it as mutual exploration, not a test they need to pass. Before you go, agree on three things: what happens if it doesn't work (you move back, no blame), what 'working' looks like for both of you, and how you'll maintain your Chicago relationships. Keep your Chicago roots warm: visit quarterly, stay in group chats, don't let friendships atrophy. And one non-negotiable: build your own social life in Denver from day one. Join a gym, find a co-working space, say yes to invitations. Your partner is your reason for going, but they can't be your entire life there."
+    ],
+    synthesis: {
+      title: "Go for 6 months \u2014 test it instead of debating it",
+      text: "Your remote work flexibility is a rare advantage that most people in this situation don't have \u2014 use it. Debating from a distance costs more emotionally than trying it firsthand. A 6-month committed experiment lets you test both the relationship and the city with a built-in exit plan. The key: build your own life there from day one so you're choosing Denver, not just choosing your partner."
+    }
+  },
+  {
+    question: "Should I go back to school at 35?",
+    responses: [
+      "Before we talk about the degree, let's examine the assumption underneath it: that a credential is what's standing between you and the career you want. Is the ceiling you're hitting actually a skills gap, or is it a positioning problem? Because those have very different solutions. Many people return to school not because they need the knowledge but because they need permission to see themselves differently \u2014 the degree becomes an identity bridge rather than a skills bridge. The deeper question I'd want you to sit with: do you genuinely want to become a data scientist and do that work every day, or do you want to escape the version of marketing that's boring you? If it's the latter, a $45K degree might be an expensive escape hatch from a problem that has cheaper solutions.",
+      "Let's model this properly, because the marketing materials for master's programs never show you the real math. The investment: $45K tuition plus 2 years of reduced capacity (you'll be exhausted, your current job performance may slip, your social life contracts). Total real cost is closer to $60\u201370K when you factor in opportunity cost of not pursuing promotions or side projects during that time. The return: you'll graduate at 37 with a shiny degree but zero data science work experience, competing against 25-year-olds who have 2+ years of hands-on experience and the same credential. Your realistic entry point is probably $110\u2013120K, not the $160K ceiling you're eyeing. But here's a counter-scenario worth modeling: what if you spent $5K on targeted certifications, built a portfolio of 3\u20134 real projects, and leveraged your decade of marketing domain expertise to land a data-adjacent role? Companies pay a premium for people who speak both languages.",
+      "Two questions the other perspectives might not ask. First: how does your household absorb this financially and emotionally? Two years of part-time school on top of full-time work means two years of reduced presence, chronic exhaustion, and increased stress. School-plus-work is genuinely hard on relationships and personal wellbeing \u2014 have you talked to people who've done it? Second, I want to flag something about identity that catches people off guard: at 35, you've been 'the marketing person' for a decade. That identity is woven into your friendships, your confidence, your sense of self. Shifting your professional identity is emotionally bigger than people expect. You'll be a beginner again in rooms full of people who are younger and faster at absorbing new technical concepts. That's not a reason not to do it, but it's a cost that doesn't show up in the tuition bill.",
+      "What if the degree isn't the play at all? Here's a reframe: you're a marketing manager who wants to work with data. That's not a weakness \u2014 that's a superposition. Companies are genuinely desperate for people who understand both business context and data. You don't need to become a data scientist. You need to become the marketing person who speaks data fluently. That's a rarer and arguably more valuable profile than yet another pure data scientist. Think about it: there are thousands of people who can build a model. There are very few who can build a model, explain what it means for the business, and translate it into a marketing strategy. You're closer to that unicorn profile than you think \u2014 you just need the technical vocabulary, not the full degree.",
+      "Here's my recommended approach \u2014 a 4-month experiment before you commit $45K and 2 years. Month 1\u20132: take one rigorous online course in Python for data analysis (Coursera or DataCamp, under $500). Complete it fully, don't just start it. Month 2\u20133: build two portfolio projects using real marketing data from your current job (anonymized). Show you can do the work, not just pass exams. Month 3\u20134: apply for 10 data-adjacent marketing roles \u2014 titles like Marketing Analyst, Growth Data Lead, Marketing Science. If you land interviews at $110K+ without the degree, you've saved $45K and two years. If you hit a hard wall where every single role explicitly requires the credential, then enroll \u2014 but you'll enter the program with real project experience, clearer goals, and the certainty that you actually need it."
+    ],
+    synthesis: {
+      title: "Test the market before buying the credential",
+      text: "The degree might solve the wrong problem. Your decade of marketing experience combined with data skills is a rarer and more valuable profile than a pure data science pivot. Run a 4-month experiment first: learn the fundamentals, build portfolio projects with real data, and test the job market. If the credential is truly the gate that's locked, enroll with confidence and real project experience. If it's not, you've saved $45K and two years."
+    }
+  }
+];
+
+// ─── State ───
+let demoCurrentScenario = null;
+let demoIsRunning = false;
+
+// ─── Build response cards (stacked) ───
+function demoBuildCards(scenario) {
+  const scroll = document.getElementById('demo-scroll');
+  scroll.innerHTML = '';
+  // 5 friend cards
+  for (let i = 0; i < 5; i++) {
+    const f = FRIENDS[i];
+    const card = document.createElement('div');
+    card.className = 'demo-resp-card';
+    card.id = 'dresp-' + i;
+    card.innerHTML =
+      '<div class="demo-resp-meta">' +
+        '<div class="demo-resp-num">' + String(f.num).padStart(2, '0') + '</div>' +
+        '<span class="demo-resp-icon">' + f.icon + '</span>' +
+        '<div class="demo-resp-info">' +
+          '<div class="demo-resp-name">' + f.name + '</div>' +
+          '<div class="demo-resp-domain">' + f.domain + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="demo-resp-text" id="dtext-' + i + '"></div>';
+    scroll.appendChild(card);
+  }
+  // Synthesis card
+  const synth = document.createElement('div');
+  synth.className = 'demo-synth-card';
+  synth.id = 'dresp-synth';
+  synth.innerHTML =
+    '<div class="dss-label">Synthesis</div>' +
+    '<div class="dss-title" id="dsynth-title"></div>' +
+    '<div class="dss-text" id="dsynth-text"></div>';
+  scroll.appendChild(synth);
+}
+
+// ─── Build dots (passive progress indicator) ───
+function demoBuildDots() {
+  const dotsEl = document.getElementById('demo-dots');
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'demo-nav-dot' + (i === 5 ? ' is-synth' : '');
+    dot.id = 'dnav-' + i;
+    dotsEl.appendChild(dot);
+  }
+}
+
+// ─── Type text word-by-word ───
+async function dTypeText(el, text) {
+  const words = text.split(' ');
+  let cur = '';
+  for (let i = 0; i < words.length; i++) {
+    if (!demoIsRunning) return; // aborted
+    cur += (i === 0 ? '' : ' ') + words[i];
+    el.innerHTML = cur + '<span class="dcursor"></span>';
+    let d = 12 + Math.random() * 14;
+    const c = words[i].slice(-1);
+    if ('.?!'.includes(c)) d += 40;
+    if (c === ',') d += 20;
+    if (':;'.includes(c)) d += 28;
+    await dSleep(d);
+  }
+  el.innerHTML = cur;
+}
+
+// ─── Run a scenario ───
+async function demoRun(index) {
+  if (demoIsRunning) return;
+  demoIsRunning = true;
+  demoCurrentScenario = DEMO_SCENARIOS[index];
+
+  // Switch views
+  document.getElementById('demo-pick').style.display = 'none';
+  document.getElementById('demo-resp-view').style.display = 'block';
+  document.getElementById('demo-qtext').textContent = demoCurrentScenario.question;
+
+  demoBuildCards(demoCurrentScenario);
+  demoBuildDots();
+
+  const scroll = document.getElementById('demo-scroll');
+  const status = document.getElementById('demo-status');
+  const names = ['Philosopher', 'Economist', 'Relationship Expert', 'Creative', 'Strategist'];
+
+  // Stream 5 friends sequentially
+  for (let i = 0; i < 5; i++) {
+    if (!demoIsRunning) return;
+    // Activate dot
+    document.getElementById('dnav-' + i).classList.add('active');
+    status.textContent = names[i] + ' is thinking...';
+
+    // Reveal card with fade-in
+    const card = document.getElementById('dresp-' + i);
+    await dSleep(300 + Math.random() * 200);
+    card.classList.add('visible');
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Type response
+    await dSleep(150);
+    await dTypeText(document.getElementById('dtext-' + i), demoCurrentScenario.responses[i]);
+
+    // Mark dot done
+    const dot = document.getElementById('dnav-' + i);
+    dot.classList.remove('active');
+    dot.classList.add('done');
+
+    if (i < 4) await dSleep(200 + Math.random() * 250);
+  }
+
+  if (!demoIsRunning) return;
+
+  // Synthesis
+  status.textContent = 'Synthesizing...';
+  document.getElementById('dnav-5').classList.add('active');
+  await dSleep(400);
+  const synthCard = document.getElementById('dresp-synth');
+  synthCard.classList.add('visible');
+  synthCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  document.getElementById('dsynth-title').textContent = demoCurrentScenario.synthesis.title;
+  await dSleep(150);
+  await dTypeText(document.getElementById('dsynth-text'), demoCurrentScenario.synthesis.text);
+
+  document.getElementById('dnav-5').classList.remove('active');
+  document.getElementById('dnav-5').classList.add('done');
+  status.textContent = 'All perspectives complete';
+  demoIsRunning = false;
+}
+
+// ─── Reset ───
+function demoReset() {
+  demoIsRunning = false;
+  demoCurrentScenario = null;
+  document.getElementById('demo-pick').style.display = 'block';
+  document.getElementById('demo-resp-view').style.display = 'none';
+  document.getElementById('demo-scroll').scrollTop = 0;
+}
+
+// ─── Utility ───
+function dSleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+
+</body>
+</html>
