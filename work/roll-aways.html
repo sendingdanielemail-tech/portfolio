@@ -592,8 +592,8 @@
     <div class="section-label">Action</div>
   </div>
   <div class="col-3-6 section-content">
-    <h2>Making the vehicle confirm, not the driver</h2>
-    <p>After testing the proposed reminder approach, I pushed the concept further: instead of asking drivers to acknowledge a notification, I designed a system that reads real-time signals from the vehicle itself — parking brake status and gear position — and surfaces a visual that reflects the actual state. The warning only clears when the vehicle is genuinely safe: brake applied, gear in park.</p>
+    <h2>Using vehicle signals to coach drivers into safer behavior</h2>
+    <p>After testing the proposed reminder approach, I pushed the concept further. Working closely with the hardware engineering team, I designed a system that reads real-time signals from the vehicle itself — parking brake status and gear position — and surfaces a visual that reflects the actual state. Instead of asking drivers to acknowledge a notification, the system soft-blocks them until the vehicle is genuinely safe: brake applied, gear in park. The collaboration with hardware was critical — we had to identify which vehicle signals were reliable enough to build an intervention on, and how to read them consistently across different van models in the fleet.</p>
     <p>Each safety condition appears as a card with clear red/green status. When both conditions are met, the alert drops away on its own. The driver doesn't dismiss anything — the vehicle does. This shifts the interaction from "I read this" to "I actually did this."</p>
     <p>A bypass option ("Press and hold to confirm") handles edge cases where sensors report a false signal, keeping drivers from getting stuck. But the friction is intentional — using the bypass takes more time and effort than simply parking safely. The path of least resistance is the right one.</p>
   </div>
