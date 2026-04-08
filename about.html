@@ -181,15 +181,14 @@
     flex-wrap: wrap;
   }
   .role .role-detail .highlight-stat {
-    background: var(--black);
-    color: var(--white);
+    border: 1px solid var(--rule-light);
     padding: 16px 24px;
     min-width: 140px;
   }
   .highlight-stat .val {
     font-size: 24px;
     font-weight: 900;
-    color: var(--red);
+    color: var(--black);
   }
   .highlight-stat .desc {
     font-size: 12px;
@@ -220,19 +219,19 @@
     gap: 2px;
   }
   .approach-card {
-    background: var(--black);
-    color: var(--white);
+    border: 1px solid var(--rule-light);
     padding: clamp(20px, 2.5vw, 32px);
   }
   .approach-card h4 {
     font-size: 15px;
     font-weight: 900;
     margin-bottom: 8px;
+    color: var(--black);
   }
   .approach-card p {
     font-size: 13px;
     line-height: 1.6;
-    color: var(--gray);
+    color: var(--text-secondary);
   }
 
   /* === TEACHING === */
@@ -261,9 +260,8 @@
   /* === CONTACT CTA === */
   .contact-cta {
     margin: 0 var(--margin) clamp(48px, 6vh, 80px);
-    background: var(--black);
-    color: var(--white);
-    padding: clamp(48px, 6vh, 80px) clamp(32px, 4vw, 64px);
+    border-top: 1px solid var(--rule-light);
+    padding: clamp(48px, 6vh, 80px) 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -274,25 +272,27 @@
     font-size: clamp(24px, 3.5vw, 42px);
     font-weight: 900;
     letter-spacing: -0.02em;
+    color: var(--black);
   }
   .contact-cta .links {
     display: flex;
     gap: 24px;
   }
   .contact-cta .links a {
-    color: var(--white);
+    color: var(--black);
     text-decoration: none;
     font-size: 14px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     padding: 12px 24px;
-    border: 2px solid var(--white);
+    border: 2px solid var(--black);
     transition: all 0.2s;
   }
   .contact-cta .links a:hover {
     background: var(--red);
     border-color: var(--red);
+    color: var(--white);
   }
 
   /* === FOOTER === */
@@ -336,7 +336,7 @@
 </nav>
 
 <section class="about-header">
-  <h1>Product designer building things that <span>matter</span></h1>
+  <h1>Human-centered design across <span>every discipline</span></h1>
 </section>
 
 <hr class="divider">
