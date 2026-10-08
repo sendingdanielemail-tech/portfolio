@@ -6,6 +6,11 @@
 
 const COOKIE_NAME = "dh_gate";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
+// Editor mode: a second password (EDIT_PASSWORD) unlocks in-page copy editing.
+// Sign in at /edit, sign out at /edit?exit=1. When the editor cookie is valid,
+// every HTML page gets /cms.js injected, which turns data-cms blocks editable.
+const EDIT_COOKIE = "dh_edit";
+const EDIT_MAX_AGE = 60 * 60 * 12; // 12 hours
 const CONTACT_EMAIL = "sendingdanielemail@gmail.com";
 
 // --- helpers ---------------------------------------------------------------
@@ -50,47 +55,81 @@ function escapeAttr(s) {
 export async function onRequest(context) {
   const { request, env, next } = context;
   const password = env.SITE_PASSWORD;
+  const url = new URL(request.url);
+  const isLocal = url.hostname === "localhost" || url.hostname === "127.0.0.1";
 
   // No password configured: stay OPEN only for local development
   // (wrangler pages dev / localhost). Everywhere else, fail CLOSED so a
   // preview deployment or a lost secret can never expose the site.
-  if (!password) {
-    const host = new URL(request.url).hostname;
-    if (host === "localhost" || host === "127.0.0.1") return next();
+  if (!password && !isLocal) {
     return new Response(
       "Site locked: SITE_PASSWORD is not configured for this environment.",
       { status: 503, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store", "X-Robots-Tag": "noindex" } }
     );
   }
 
-  const secret = env.COOKIE_SECRET || password;
-  const validToken = await sign(secret, "authorized-v1");
+  const secret = env.COOKIE_SECRET || password || "local-dev";
+  const validToken = password ? await sign(secret, "authorized-v1") : null;
+  const siteAuthed = !password || getCookie(request, COOKIE_NAME) === validToken;
 
-  // Already authenticated → serve the real site.
-  if (getCookie(request, COOKIE_NAME) === validToken) {
-    return next();
+  if (!siteAuthed) {
+    // Handle a login submission.
+    if (request.method === "POST" && url.pathname !== "/api/cms/save") {
+      const form = await request.formData();
+      const submitted = form.get("password");
+      const target = safeNext(form.get("next"));
+      if (typeof submitted === "string" && submitted === password) {
+        const headers = new Headers({ Location: target, "Cache-Control": "no-store" });
+        headers.append(
+          "Set-Cookie",
+          `${COOKIE_NAME}=${validToken}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${COOKIE_MAX_AGE}`
+        );
+        return new Response(null, { status: 302, headers });
+      }
+      return htmlResponse(loginPage({ error: true, next: target }), 401);
+    }
+    // Any other request from an unauthenticated visitor → show the gate.
+    return htmlResponse(loginPage({ error: false, next: safeNext(url.pathname + url.search) }), 401);
   }
 
-  const url = new URL(request.url);
+  // ---- editor mode (site-authenticated visitors only) ----------------------
+  const editPw = env.EDIT_PASSWORD;
+  const editToken = editPw ? await sign(secret, "editor-v1:" + editPw) : null;
+  const editing = !!editPw && getCookie(request, EDIT_COOKIE) === editToken;
 
-  // Handle a login submission.
-  if (request.method === "POST") {
-    const form = await request.formData();
-    const submitted = form.get("password");
-    const target = safeNext(form.get("next"));
-    if (typeof submitted === "string" && submitted === password) {
-      const headers = new Headers({ Location: target, "Cache-Control": "no-store" });
-      headers.append(
-        "Set-Cookie",
-        `${COOKIE_NAME}=${validToken}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${COOKIE_MAX_AGE}`
-      );
+  if (url.pathname === "/edit") {
+    if (!editPw) return new Response("Editor not configured (EDIT_PASSWORD secret missing).", { status: 404, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store" } });
+    if (url.searchParams.get("exit") === "1") {
+      const headers = new Headers({ Location: "/", "Cache-Control": "no-store" });
+      headers.append("Set-Cookie", `${EDIT_COOKIE}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`);
       return new Response(null, { status: 302, headers });
     }
-    return htmlResponse(loginPage({ error: true, next: target }), 401);
+    if (editing) return Response.redirect(new URL(safeNext(url.searchParams.get("next") || "/"), url).toString(), 302);
+    if (request.method === "POST") {
+      const form = await request.formData();
+      const target = safeNext(form.get("next"));
+      if (form.get("password") === editPw) {
+        const headers = new Headers({ Location: target, "Cache-Control": "no-store" });
+        headers.append("Set-Cookie", `${EDIT_COOKIE}=${editToken}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${EDIT_MAX_AGE}`);
+        return new Response(null, { status: 302, headers });
+      }
+      return htmlResponse(editLoginPage({ error: true, next: target }), 401);
+    }
+    return htmlResponse(editLoginPage({ error: false, next: safeNext(url.searchParams.get("next") || "/") }), 200);
   }
 
-  // Any other request from an unauthenticated visitor → show the gate.
-  return htmlResponse(loginPage({ error: false, next: safeNext(url.pathname + url.search) }), 401);
+  const response = await next();
+  if (!editing) return response;
+
+  // Editing: inject the editor script into HTML pages and make sure nothing caches.
+  const ct = response.headers.get("Content-Type") || "";
+  if (!ct.includes("text/html")) return response;
+  const out = new HTMLRewriter()
+    .on("body", { element(el) { el.append('<script src="/cms.js" defer></script>', { html: true }); } })
+    .transform(response);
+  const headers = new Headers(out.headers);
+  headers.set("Cache-Control", "no-store");
+  return new Response(out.body, { status: out.status, headers });
 }
 
 function htmlResponse(body, status) {
@@ -215,4 +254,21 @@ function loginPage({ error, next }) {
   </main>
 </body>
 </html>`;
+}
+
+
+// --- the editor sign-in screen ---------------------------------------------
+
+function editLoginPage({ error, next }) {
+  // Reuse the gate page markup, swap the copy and form.
+  return loginPage({ error: false, next })
+    .replace("<h1>This portfolio is private.</h1>", "<h1>Edit mode.</h1>")
+    .replace('<p class="lede">Enter the password to view the work, or request access below.</p>',
+             '<p class="lede">Enter the editor password. Every block of text on the site becomes editable; Save commits straight to GitHub.</p>')
+    .replace('<form method="POST" action="">', '<form method="POST" action="/edit">')
+    .replace('<label class="field" for="pw">Password</label>', '<label class="field" for="pw">Editor password</label>')
+    .replace('<div class="error"></div>', `<div class="error">${error ? "Incorrect editor password." : ""}</div>`)
+    .replace('<button class="enter" type="submit">Enter</button>', '<button class="enter" type="submit">Start editing</button>')
+    .replace(/<div class="divider"><\/div>[\s\S]*?<\/div>\n    <footer>/, '<div class="divider"></div>\n    <div class="request">Just here to view? <a href="/">Go to the site →</a></div>\n    <footer>')
+    .replace("<title>Daniel Hennessy — Portfolio</title>", "<title>Edit — Daniel Hennessy</title>");
 }

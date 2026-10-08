@@ -514,12 +514,12 @@
      HEADER — label col 1-2, title col 3-6
      ============================================ -->
 <div class="grid cs-header">
-  <div class="col-1-2">
+  <div data-cms="roll-aways-001" class="col-1-2">
     <span class="number">Case Study 03</span>
   </div>
   <div class="col-3-6 header-content">
-    <h1>Preventing roll-aways</h1>
-    <p class="lede">Redesigned Amazon's vehicle safety system to use real-time signals — replacing passive reminders with an active intervention that eliminated roll-away incidents.</p>
+    <h1 data-cms="roll-aways-002">Preventing roll-aways</h1>
+    <p data-cms="roll-aways-003" class="lede">Redesigned Amazon's vehicle safety system to use real-time signals — replacing passive reminders with an active intervention that eliminated roll-away incidents.</p>
   </div>
 </div>
 
@@ -528,16 +528,16 @@
      ============================================ -->
 <div class="grid meta-bar">
   <dl class="col-1-2">
-    <dt>Role</dt>
-    <dd>Lead Product Designer</dd>
+    <dt data-cms="roll-aways-004">Role</dt>
+    <dd data-cms="roll-aways-005">Lead Product Designer</dd>
   </dl>
   <dl class="col-3-4">
-    <dt>Company</dt>
-    <dd>Amazon</dd>
+    <dt data-cms="roll-aways-006">Company</dt>
+    <dd data-cms="roll-aways-007">Amazon</dd>
   </dl>
   <dl class="col-5-6">
-    <dt>Type</dt>
-    <dd>Vehicle Safety</dd>
+    <dt data-cms="roll-aways-008">Type</dt>
+    <dd data-cms="roll-aways-009">Vehicle Safety</dd>
   </dl>
 </div>
 
@@ -555,30 +555,30 @@
      ============================================ -->
 <div class="grid section-block">
   <div class="col-1-2">
-    <div class="section-label">Situation</div>
+    <div data-cms="roll-aways-010" class="section-label">Situation</div>
   </div>
   <div class="col-3-6 section-content">
-    <h2>A reminder isn't the same as a fix</h2>
-    <p>Roll-aways — vehicles moving on their own after a driver exits — are one of the most dangerous events in fleet operations. The fleet already had an At Stop Notification on the driver's phone: after a safety event, the driver would see a reminder to use their parking brake, confirm they read it, and move on.</p>
-    <p>My PM's proposal was to bring this same pattern to the in-vehicle tablet — a real-time version of the same acknowledge-and-dismiss flow. I tested the approach, but the fundamental problem remained: the driver could tap through the reminder while the vehicle was still parked unsafely. A notification someone acknowledges isn't an intervention — it's a checkbox. The van doesn't care if you read the message.</p>
+    <h2 data-cms="roll-aways-011">A reminder isn't the same as a fix</h2>
+    <p data-cms="roll-aways-012">Roll-aways — vehicles moving on their own after a driver exits — are one of the most dangerous events in fleet operations. The fleet already had an At Stop Notification on the driver's phone: after a safety event, the driver would see a reminder to use their parking brake, confirm they read it, and move on.</p>
+    <p data-cms="roll-aways-013">My PM's proposal was to bring this same pattern to the in-vehicle tablet — a real-time version of the same acknowledge-and-dismiss flow. I tested the approach, but the fundamental problem remained: the driver could tap through the reminder while the vehicle was still parked unsafely. A notification someone acknowledges isn't an intervention — it's a checkbox. The van doesn't care if you read the message.</p>
   </div>
 </div>
 
 <!-- Existing phone mechanism + PM's tablet proposal -->
 <div class="grid img-row">
   <div class="col-1-2">
-    <div class="img-label">Existing — phone</div>
+    <div data-cms="roll-aways-014" class="img-label">Existing — phone</div>
     <div class="matched-height">
       <img src="../assets/roll-aways/at-stop-phone.png" alt="At Stop Notification on phone — safety event detected, reminder to use parking brake">
     </div>
-    <div class="img-caption">The existing At Stop Notification on the driver's phone: a post-event reminder they read and acknowledge.</div>
+    <div data-cms="roll-aways-015" class="img-caption">The existing At Stop Notification on the driver's phone: a post-event reminder they read and acknowledge.</div>
   </div>
   <div class="col-3-6">
-    <div class="img-label">The ask — tablet</div>
+    <div data-cms="roll-aways-016" class="img-label">The ask — tablet</div>
     <div class="matched-height">
       <img src="../assets/roll-aways/at-stop-tablet.png" alt="At Stop Notification on tablet — use your parking brake reminder">
     </div>
-    <div class="img-caption">The PM's proposal: bring the same acknowledge-and-dismiss pattern to the in-vehicle tablet. Same problem — no verification the vehicle is actually safe.</div>
+    <div data-cms="roll-aways-017" class="img-caption">The PM's proposal: bring the same acknowledge-and-dismiss pattern to the in-vehicle tablet. Same problem — no verification the vehicle is actually safe.</div>
   </div>
 </div>
 
@@ -589,31 +589,31 @@
      ============================================ -->
 <div class="grid section-block">
   <div class="col-1-2">
-    <div class="section-label">Action</div>
+    <div data-cms="roll-aways-018" class="section-label">Action</div>
   </div>
   <div class="col-3-6 section-content">
-    <h2>Using vehicle signals to coach drivers into safer behavior</h2>
-    <p>After testing the proposed reminder approach, I pushed the concept further. Working closely with the hardware engineering team, I designed a system that reads real-time signals from the vehicle itself — parking brake status and gear position — and surfaces a visual that reflects the actual state. Instead of asking drivers to acknowledge a notification, the system soft-blocks them until the vehicle is genuinely safe: brake applied, gear in park. The collaboration with hardware was critical — we had to identify which vehicle signals were reliable enough to build an intervention on, and how to read them consistently across different van models in the fleet.</p>
-    <p>Each safety condition appears as a card with clear red/green status. When both conditions are met, the alert drops away on its own. The driver doesn't dismiss anything — the vehicle does. This shifts the interaction from "I read this" to "I actually did this."</p>
-    <p>A bypass option ("Press and hold to confirm") handles edge cases where sensors report a false signal, keeping drivers from getting stuck. But the friction is intentional — using the bypass takes more time and effort than simply parking safely. The path of least resistance is the right one.</p>
+    <h2 data-cms="roll-aways-019">Using vehicle signals to coach drivers into safer behavior</h2>
+    <p data-cms="roll-aways-020">After testing the proposed reminder approach, I pushed the concept further. Working closely with the hardware engineering team, I designed a system that reads real-time signals from the vehicle itself — parking brake status and gear position — and surfaces a visual that reflects the actual state. Instead of asking drivers to acknowledge a notification, the system soft-blocks them until the vehicle is genuinely safe: brake applied, gear in park. The collaboration with hardware was critical — we had to identify which vehicle signals were reliable enough to build an intervention on, and how to read them consistently across different van models in the fleet.</p>
+    <p data-cms="roll-aways-021">Each safety condition appears as a card with clear red/green status. When both conditions are met, the alert drops away on its own. The driver doesn't dismiss anything — the vehicle does. This shifts the interaction from "I read this" to "I actually did this."</p>
+    <p data-cms="roll-aways-022">A bypass option ("Press and hold to confirm") handles edge cases where sensors report a false signal, keeping drivers from getting stuck. But the friction is intentional — using the bypass takes more time and effort than simply parking safely. The path of least resistance is the right one.</p>
   </div>
 </div>
 
 <!-- The new design — tablet states -->
 <div class="grid img-row">
   <div class="col-1-3">
-    <div class="img-label">Both conditions unmet</div>
+    <div data-cms="roll-aways-023" class="img-label">Both conditions unmet</div>
     <div class="img-half">
       <img src="../assets/roll-aways/no-eBrake-gear-not-in-P.png" alt="Tablet warning: neither parking brake nor gear in park — both red">
     </div>
-    <div class="img-caption">Neither condition is met — both cards show red. The driver can't continue until both are resolved.</div>
+    <div data-cms="roll-aways-024" class="img-caption">Neither condition is met — both cards show red. The driver can't continue until both are resolved.</div>
   </div>
   <div class="col-4-6">
-    <div class="img-label">Brake applied, gear still out</div>
+    <div data-cms="roll-aways-025" class="img-label">Brake applied, gear still out</div>
     <div class="img-half">
       <img src="../assets/roll-aways/gear-not-in-park.png" alt="Tablet warning: parking brake applied (green), gear not in park (red)">
     </div>
-    <div class="img-caption">Parking brake is applied (green), but gear isn't in park (red). Real-time feedback shows exactly what's left to do.</div>
+    <div data-cms="roll-aways-026" class="img-caption">Parking brake is applied (green), but gear isn't in park (red). Real-time feedback shows exactly what's left to do.</div>
   </div>
 </div>
 
@@ -624,29 +624,29 @@
      ============================================ -->
 <div class="grid section-block">
   <div class="col-1-2">
-    <div class="section-label">Surfaces</div>
+    <div data-cms="roll-aways-027" class="section-label">Surfaces</div>
   </div>
   <div class="col-3-6 section-content">
-    <h2>Designing for two surfaces at once</h2>
-    <p>The intervention needed to work on both surfaces: the in-vehicle tablet and the driver's phone. The tablet catches the issue at the moment of parking. But the phone is just as critical — once a driver steps out to complete a delivery, they need to take the phone with them. If the vehicle isn't safely parked, the phone becomes a soft block: the driver can't move on to their next task without addressing the parking issue first. Same core layout on both — headline, status cards, bypass action — adapted for each form factor.</p>
+    <h2 data-cms="roll-aways-028">Designing for two surfaces at once</h2>
+    <p data-cms="roll-aways-029">The intervention needed to work on both surfaces: the in-vehicle tablet and the driver's phone. The tablet catches the issue at the moment of parking. But the phone is just as critical — once a driver steps out to complete a delivery, they need to take the phone with them. If the vehicle isn't safely parked, the phone becomes a soft block: the driver can't move on to their next task without addressing the parking issue first. Same core layout on both — headline, status cards, bypass action — adapted for each form factor.</p>
   </div>
 </div>
 
 <!-- Phone + Tablet side by side -->
 <div class="grid img-row">
   <div class="col-1-2">
-    <div class="img-label">Phone</div>
+    <div data-cms="roll-aways-030" class="img-label">Phone</div>
     <div class="matched-height">
       <img src="../assets/roll-aways/phone-no-eBrake.png" alt="Phone version — parking brake not applied, gear in park">
     </div>
-    <div class="img-caption">Phone: a soft block to delivery. The driver can't move on to their next stop without addressing the parking issue first.</div>
+    <div data-cms="roll-aways-031" class="img-caption">Phone: a soft block to delivery. The driver can't move on to their next stop without addressing the parking issue first.</div>
   </div>
   <div class="col-3-6">
-    <div class="img-label">Tablet</div>
+    <div data-cms="roll-aways-032" class="img-label">Tablet</div>
     <div class="matched-height">
       <img src="../assets/roll-aways/tablet-no-eBrake.png" alt="Tablet version — parking brake not applied, gear in park">
     </div>
-    <div class="img-caption">Tablet: denser layout, designed for dash-mounted scanning. Same information hierarchy, adapted for landscape.</div>
+    <div data-cms="roll-aways-033" class="img-caption">Tablet: denser layout, designed for dash-mounted scanning. Same information hierarchy, adapted for landscape.</div>
   </div>
 </div>
 
@@ -654,7 +654,7 @@
      PULL QUOTE
      ============================================ -->
 <div class="grid pull-quote-block">
-  <blockquote class="col-1-6 pull-quote">
+  <blockquote data-cms="roll-aways-034" class="col-1-6 pull-quote">
     The driver doesn't dismiss the warning — the vehicle does.
   </blockquote>
 </div>
@@ -665,31 +665,31 @@
      RESULTS
      ============================================ -->
 <div class="grid results-block">
-  <div class="col-1-2 results-rule">
+  <div data-cms="roll-aways-035" class="col-1-2 results-rule">
     <span class="section-label">Results</span>
   </div>
   <div class="col-3-6 results-rule">
-    <h2>Zero roll-aways</h2>
+    <h2 data-cms="roll-aways-036">Zero roll-aways</h2>
   </div>
 
   <div class="col-1-2 stat-cell">
-    <div class="number-lg">0</div>
-    <div class="stat-label">Roll-away incidents with the system enabled</div>
+    <div data-cms="roll-aways-037" class="number-lg">0</div>
+    <div data-cms="roll-aways-038" class="stat-label">Roll-away incidents with the system enabled</div>
   </div>
   <div class="col-3-4 stat-cell">
-    <div class="number-lg">94.5%</div>
-    <div class="stat-label">Parking brake compliance, up from 23%</div>
+    <div data-cms="roll-aways-039" class="number-lg">94.5%</div>
+    <div data-cms="roll-aways-040" class="stat-label">Parking brake compliance, up from 23%</div>
   </div>
   <div class="col-5-6 stat-cell">
-    <div class="number-lg">8/9</div>
-    <div class="stat-label">Drivers found the tool useful</div>
+    <div data-cms="roll-aways-041" class="number-lg">8/9</div>
+    <div data-cms="roll-aways-042" class="stat-label">Drivers found the tool useful</div>
   </div>
 
   <div class="col-1-3 results-context">
-    <p>By tying the safety intervention to real-time vehicle signals rather than driver acknowledgment, compliance shifted from roughly one in four drivers to nearly all of them. The system's success extended beyond the immediate safety metric — it influenced broader operational decisions around fleet standards and vehicle procurement priorities.</p>
+    <p data-cms="roll-aways-043">By tying the safety intervention to real-time vehicle signals rather than driver acknowledgment, compliance shifted from roughly one in four drivers to nearly all of them. The system's success extended beyond the immediate safety metric — it influenced broader operational decisions around fleet standards and vehicle procurement priorities.</p>
   </div>
   <div class="col-4-6 results-context">
-    <p>The deliberate friction in the bypass flow proved critical: making drivers press and hold (rather than tap) reduced false dismissals while still providing an escape hatch for genuine sensor errors. The design balanced safety with trust — drivers weren't locked out, but they couldn't sleepwalk through it either.</p>
+    <p data-cms="roll-aways-044">The deliberate friction in the bypass flow proved critical: making drivers press and hold (rather than tap) reduced false dismissals while still providing an escape hatch for genuine sensor errors. The design balanced safety with trust — drivers weren't locked out, but they couldn't sleepwalk through it either.</p>
   </div>
 </div>
 
@@ -699,12 +699,12 @@
 <div class="grid" style="padding-top: clamp(24px, 3vh, 48px);">
   <div class="col-1-6 next-project">
     <div class="grid" style="padding: 0;">
-      <div class="col-1-2">
+      <div data-cms="roll-aways-045" class="col-1-2">
         <span class="next-project-label">Next Project</span>
       </div>
       <div class="col-3-6 next-project-content">
         <div class="next-text">
-          <h3><a href="grocery.html">Reinventing digital grocery shopping &rarr;</a></h3>
+          <h3 data-cms="roll-aways-046"><a href="grocery.html">Reinventing digital grocery shopping &rarr;</a></h3>
           <span class="next-meta">Target &middot; E-Commerce</span>
         </div>
         <div class="next-img">

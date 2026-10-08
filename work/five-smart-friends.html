@@ -791,12 +791,12 @@
      HEADER
      ============================================ -->
 <div class="grid cs-header">
-  <div class="col-1-2">
+  <div data-cms="five-smart-friends-001" class="col-1-2">
     <span class="number">Case Study 05</span>
   </div>
   <div class="col-3-6 header-content">
-    <h1>Building a decision-making tool with AI</h1>
-    <p class="lede">Designed and prototyped Five Smart Friends — a tool that gives you five expert perspectives on any life decision.</p>
+    <h1 data-cms="five-smart-friends-002">Building a decision-making tool with AI</h1>
+    <p data-cms="five-smart-friends-003" class="lede">Designed and prototyped Five Smart Friends — a tool that gives you five expert perspectives on any life decision.</p>
   </div>
 </div>
 
@@ -805,16 +805,16 @@
      ============================================ -->
 <div class="grid meta-bar">
   <dl class="col-1-2">
-    <dt>Role</dt>
-    <dd>Designer & Developer</dd>
+    <dt data-cms="five-smart-friends-004">Role</dt>
+    <dd data-cms="five-smart-friends-005">Designer & Developer</dd>
   </dl>
   <dl class="col-3-4">
-    <dt>Type</dt>
-    <dd>Personal Project</dd>
+    <dt data-cms="five-smart-friends-006">Type</dt>
+    <dd data-cms="five-smart-friends-007">Personal Project</dd>
   </dl>
   <dl class="col-5-6">
-    <dt>Status</dt>
-    <dd>In Progress</dd>
+    <dt data-cms="five-smart-friends-008">Status</dt>
+    <dd data-cms="five-smart-friends-009">In Progress</dd>
   </dl>
 </div>
 
@@ -832,12 +832,12 @@
      ============================================ -->
 <div class="grid section-block">
   <div class="col-1-2">
-    <div class="section-label">Situation</div>
+    <div data-cms="five-smart-friends-010" class="section-label">Situation</div>
   </div>
   <div class="col-3-6 section-content">
-    <h2>Rethinking how humans interact with AI beyond chatbots</h2>
-    <p>I've been interested in how people make good decisions for a long time, and I kept hitting the same wall with AI: one voice, one perspective, one thread of advice. That's not how good decisions get made.</p>
-    <p>The insight was that we now have humanity's greatest thinkers at our fingertips — a Marcus Aurelius, a Ray Dalio, an Esther Perel can essentially walk into your living room and weigh in. Not just rounded perspectives, but incredibly <em>good</em> ones. Five Smart Friends gives you five expert lenses on any decision, each seeing something the others miss.</p>
+    <h2 data-cms="five-smart-friends-011">Rethinking how humans interact with AI beyond chatbots</h2>
+    <p data-cms="five-smart-friends-012">I've been interested in how people make good decisions for a long time, and I kept hitting the same wall with AI: one voice, one perspective, one thread of advice. That's not how good decisions get made.</p>
+    <p data-cms="five-smart-friends-013">The insight was that we now have humanity's greatest thinkers at our fingertips — a Marcus Aurelius, a Ray Dalio, an Esther Perel can essentially walk into your living room and weigh in. Not just rounded perspectives, but incredibly <em>good</em> ones. Five Smart Friends gives you five expert lenses on any decision, each seeing something the others miss.</p>
   </div>
 </div>
 
@@ -848,12 +848,12 @@
      ============================================ -->
 <div class="grid section-block">
   <div class="col-1-2">
-    <div class="section-label">Action</div>
+    <div data-cms="five-smart-friends-014" class="section-label">Action</div>
   </div>
   <div class="col-3-6 section-content">
-    <h2>Five distinct perspectives, not five variations of one</h2>
-    <p>The core design challenge was differentiation. If you ask five AI personas the same question, they tend to converge on similar advice. The tool would only be valuable if each friend genuinely saw different things — the Philosopher notices what the Economist misses, the Creative reframes what the Relationship Expert takes at face value.</p>
-    <p>I designed five friends, each with a specific analytical lens, a distinct voice, and explicit instructions to disagree with the others when warranted:</p>
+    <h2 data-cms="five-smart-friends-015">Five distinct perspectives, not five variations of one</h2>
+    <p data-cms="five-smart-friends-016">The core design challenge was differentiation. If you ask five AI personas the same question, they tend to converge on similar advice. The tool would only be valuable if each friend genuinely saw different things — the Philosopher notices what the Economist misses, the Creative reframes what the Relationship Expert takes at face value.</p>
+    <p data-cms="five-smart-friends-017">I designed five friends, each with a specific analytical lens, a distinct voice, and explicit instructions to disagree with the others when warranted:</p>
   </div>
 </div>
 
@@ -864,7 +864,7 @@
   </div>
 </div>
 <div class="grid" style="margin-top: 12px;">
-  <div class="col-1-6 img-caption">The five perspectives: Philosopher (meaning & values), Economist (costs & trade-offs), Relationship Expert (people & ripple effects), Creative (reframes & possibilities), Strategist (action & path forward).</div>
+  <div data-cms="five-smart-friends-018" class="col-1-6 img-caption">The five perspectives: Philosopher (meaning & values), Economist (costs & trade-offs), Relationship Expert (people & ripple effects), Creative (reframes & possibilities), Strategist (action & path forward).</div>
 </div>
 
 <hr class="divider" style="margin-top: clamp(48px, 6vh, 80px);">
@@ -874,12 +874,12 @@
      ============================================ -->
 <div class="grid section-block">
   <div class="col-1-2">
-    <div class="section-label">Architecture</div>
+    <div data-cms="five-smart-friends-019" class="section-label">Architecture</div>
   </div>
   <div class="col-3-6 section-content">
-    <h2>Designing the conversation, not just the interface</h2>
-    <p>The product's quality lives or dies in the prompt architecture. Each friend has a system prompt that defines their analytical framework, their voice, and crucially — what they're supposed to notice that the others won't. The Economist is explicitly told to surface opportunity costs and second-order effects. The Relationship Expert is told to map human ripple effects the user hasn't considered.</p>
-    <p>The five prompts fire in parallel against the Claude API, and the Strategist's prompt includes a synthesis step that weighs the other four perspectives into a ranked recommendation. The user gets five distinct takes plus a concrete action plan — in under 60 seconds.</p>
+    <h2 data-cms="five-smart-friends-020">Designing the conversation, not just the interface</h2>
+    <p data-cms="five-smart-friends-021">The product's quality lives or dies in the prompt architecture. Each friend has a system prompt that defines their analytical framework, their voice, and crucially — what they're supposed to notice that the others won't. The Economist is explicitly told to surface opportunity costs and second-order effects. The Relationship Expert is told to map human ripple effects the user hasn't considered.</p>
+    <p data-cms="five-smart-friends-022">The five prompts fire in parallel against the Claude API, and the Strategist's prompt includes a synthesis step that weighs the other four perspectives into a ranked recommendation. The user gets five distinct takes plus a concrete action plan — in under 60 seconds.</p>
   </div>
 </div>
 
@@ -887,31 +887,31 @@
 <div class="grid img-row">
   <div class="col-1-6">
     <div class="demo-embed" id="demo-embed">
-      <div class="demo-badge">Interactive Demo</div>
+      <div data-cms="five-smart-friends-023" class="demo-badge">Interactive Demo</div>
 
       <!-- PICK VIEW: choose an example -->
       <div class="demo-pick" id="demo-pick">
-        <div class="demo-pick-label">Decision Making Tool</div>
-        <div class="demo-pick-title">TRY IT <span class="demo-outline">YOURSELF</span></div>
-        <p class="demo-pick-sub">Pick an example scenario and watch five friends weigh in. Each brings a different lens to the same situation.</p>
+        <div data-cms="five-smart-friends-024" class="demo-pick-label">Decision Making Tool</div>
+        <div data-cms="five-smart-friends-025" class="demo-pick-title">TRY IT <span class="demo-outline">YOURSELF</span></div>
+        <p data-cms="five-smart-friends-026" class="demo-pick-sub">Pick an example scenario and watch five friends weigh in. Each brings a different lens to the same situation.</p>
         <div class="demo-examples">
           <button class="demo-ex-card" onclick="demoRun(0)">
-            <div class="dex-num">01</div>
-            <div class="dex-question">Should I leave my stable job to start a company?</div>
-            <div class="dex-preview">32 years old, 14 months of savings, a partner, and an idea that won't go away.</div>
-            <div class="dex-cta">Try this &rarr;</div>
+            <div data-cms="five-smart-friends-027" class="dex-num">01</div>
+            <div data-cms="five-smart-friends-028" class="dex-question">Should I leave my stable job to start a company?</div>
+            <div data-cms="five-smart-friends-029" class="dex-preview">32 years old, 14 months of savings, a partner, and an idea that won't go away.</div>
+            <div data-cms="five-smart-friends-030" class="dex-cta">Try this &rarr;</div>
           </button>
           <button class="demo-ex-card" onclick="demoRun(1)">
-            <div class="dex-num">02</div>
-            <div class="dex-question">Should I move to a new city for a relationship?</div>
-            <div class="dex-preview">8 months in, remote job, all my friends and family are here.</div>
-            <div class="dex-cta">Try this &rarr;</div>
+            <div data-cms="five-smart-friends-031" class="dex-num">02</div>
+            <div data-cms="five-smart-friends-032" class="dex-question">Should I move to a new city for a relationship?</div>
+            <div data-cms="five-smart-friends-033" class="dex-preview">8 months in, remote job, all my friends and family are here.</div>
+            <div data-cms="five-smart-friends-034" class="dex-cta">Try this &rarr;</div>
           </button>
           <button class="demo-ex-card" onclick="demoRun(2)">
-            <div class="dex-num">03</div>
-            <div class="dex-question">Should I go back to school at 35?</div>
-            <div class="dex-preview">$95K ceiling, $45K master's degree, and a career pivot to data science.</div>
-            <div class="dex-cta">Try this &rarr;</div>
+            <div data-cms="five-smart-friends-035" class="dex-num">03</div>
+            <div data-cms="five-smart-friends-036" class="dex-question">Should I go back to school at 35?</div>
+            <div data-cms="five-smart-friends-037" class="dex-preview">$95K ceiling, $45K master's degree, and a career pivot to data science.</div>
+            <div data-cms="five-smart-friends-038" class="dex-cta">Try this &rarr;</div>
           </button>
         </div>
       </div>
@@ -921,13 +921,13 @@
         <!-- Question banner -->
         <div class="demo-qbar">
           <div class="demo-qbar-text" id="demo-qtext"></div>
-          <div class="demo-qbar-meta">5 perspectives + synthesis</div>
+          <div data-cms="five-smart-friends-039" class="demo-qbar-meta">5 perspectives + synthesis</div>
         </div>
 
         <!-- Progress dots (passive indicator, no click) -->
         <div class="demo-nav">
           <div class="demo-nav-dots" id="demo-dots"></div>
-          <div class="demo-nav-status" id="demo-status">Analyzing your situation...</div>
+          <div data-cms="five-smart-friends-040" class="demo-nav-status" id="demo-status">Analyzing your situation...</div>
         </div>
 
         <!-- Scrollable response stack -->
@@ -951,31 +951,31 @@
 <hr class="divider-heavy" style="margin-top: clamp(48px, 6vh, 80px);">
 
 <div class="grid results-block">
-  <div class="col-1-2 results-rule">
+  <div data-cms="five-smart-friends-041" class="col-1-2 results-rule">
     <span class="section-label">Results</span>
   </div>
   <div class="col-3-6 results-rule">
-    <h2>A working prototype with a clear product direction</h2>
+    <h2 data-cms="five-smart-friends-042">A working prototype with a clear product direction</h2>
   </div>
 
   <div class="col-1-2 stat-cell">
-    <div class="number-lg">5</div>
-    <div class="stat-label">Distinct AI perspectives<br>per query</div>
+    <div data-cms="five-smart-friends-043" class="number-lg">5</div>
+    <div data-cms="five-smart-friends-044" class="stat-label">Distinct AI perspectives<br>per query</div>
   </div>
   <div class="col-3-4 stat-cell">
-    <div class="number-lg">&lt;60s</div>
-    <div class="stat-label">Full analysis<br>with all five friends</div>
+    <div data-cms="five-smart-friends-045" class="number-lg">&lt;60s</div>
+    <div data-cms="five-smart-friends-046" class="stat-label">Full analysis<br>with all five friends</div>
   </div>
   <div class="col-5-6 stat-cell">
-    <div class="number-lg">4/5</div>
-    <div class="stat-label">Users found at least one<br>new angle they'd missed</div>
+    <div data-cms="five-smart-friends-047" class="number-lg">4/5</div>
+    <div data-cms="five-smart-friends-048" class="stat-label">Users found at least one<br>new angle they'd missed</div>
   </div>
 
   <div class="col-1-3 results-context">
-    <p><strong>The landing page and prompt architecture are complete.</strong> The next phase is building the full input-to-response flow as a working web app (Next.js + Claude API) and deploying it as a publicly accessible prototype.</p>
+    <p data-cms="five-smart-friends-049"><strong>The landing page and prompt architecture are complete.</strong> The next phase is building the full input-to-response flow as a working web app (Next.js + Claude API) and deploying it as a publicly accessible prototype.</p>
   </div>
   <div class="col-4-6 results-context">
-    <p><strong>This project demonstrates end-to-end product thinking</strong> — from identifying a real human need, through visual design, prompt engineering, and technical architecture, to a testable prototype.</p>
+    <p data-cms="five-smart-friends-050"><strong>This project demonstrates end-to-end product thinking</strong> — from identifying a real human need, through visual design, prompt engineering, and technical architecture, to a testable prototype.</p>
   </div>
 </div>
 
@@ -985,12 +985,12 @@
 <div class="grid" style="padding-top: clamp(24px, 3vh, 48px);">
   <div class="col-1-6 next-project">
     <div class="grid" style="padding: 0;">
-      <div class="col-1-2">
+      <div data-cms="five-smart-friends-051" class="col-1-2">
         <span class="next-project-label">Next Project</span>
       </div>
       <div class="col-3-6 next-project-content">
         <div class="next-text">
-          <h3><a href="vibe-coding.html">Building visual tools to improve vibe coding &rarr;</a></h3>
+          <h3 data-cms="five-smart-friends-052"><a href="vibe-coding.html">Building visual tools to improve vibe coding &rarr;</a></h3>
           <span class="next-meta">Amazon &middot; Internal Tool</span>
         </div>
         <div class="next-img">
