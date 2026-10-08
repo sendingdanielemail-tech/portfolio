@@ -10,7 +10,7 @@ Everything on the live site is in this folder. Change a file, run one command, i
    ```
    cd ~/Desktop/Projects/Portfolio/site && ./deploy.sh "Tightened grocery intro"
    ```
-   It saves to git, pushes to GitHub, and publishes to Cloudflare. ~30 seconds. Hard-refresh the live page if you still see old copy.
+   It saves to git and pushes to GitHub. Cloudflare watches the GitHub repo and rebuilds the live site from it in about a minute. Hard-refresh (Cmd+Shift+R) if you still see old copy.
 
 ## Which file is which page
 
@@ -84,7 +84,8 @@ If a page suddenly looks broken in preview, you probably deleted a closing tag l
 
 ## If something goes wrong
 
-- **Deploy says GitHub push failed**: the site still published. Ask Claude to refresh the GitHub token.
-- **Deploy says Cloudflare publish failed**: run `wrangler login` in a terminal, then re-run the deploy.
+- **Deploy says GitHub push failed**: it tries a direct publish as a fallback. Either way, ask Claude to refresh the GitHub token so the repo and site stay matched.
+- **Both paths failed**: run `wrangler login` in a terminal (opens a browser, click Allow), then re-run the deploy.
+- **Change isn't showing after 2 minutes**: Cloudflare → Workers & Pages → portfolio → Deployments shows whether the build succeeded.
 - **Want to undo the last deploy**: `git revert HEAD --no-edit && ./deploy.sh "Undo"` in the `site/` folder, or ask Claude.
 - **Want to see what changed**: `git log --oneline` in the `site/` folder.

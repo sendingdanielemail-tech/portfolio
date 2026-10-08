@@ -6,6 +6,5 @@
   "editor.wordWrap": "on",
   "editor.formatOnSave": false,
   "html.autoClosingTags": true,
-  "livePreview.defaultPreviewPath": "/index.html",
-  "livePreview.openPreviewTarget": "External Browser"
+  "livePreview.defaultPreviewPath": "/index.html"
 }
