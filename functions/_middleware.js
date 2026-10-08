@@ -2,6 +2,7 @@
 // The password is checked SERVER-SIDE against the SITE_PASSWORD environment
 // variable (a Cloudflare secret) — it never appears in the page source.
 // A signed cookie keeps visitors logged in so they only enter it once.
+// If SITE_PASSWORD is missing the gate fails CLOSED (503) except on localhost.
 
 const COOKIE_NAME = "dh_gate";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
@@ -50,8 +51,17 @@ export async function onRequest(context) {
   const { request, env, next } = context;
   const password = env.SITE_PASSWORD;
 
-  // Fail safe: if no password is configured, don't lock everyone out.
-  if (!password) return next();
+  // No password configured: stay OPEN only for local development
+  // (wrangler pages dev / localhost). Everywhere else, fail CLOSED so a
+  // preview deployment or a lost secret can never expose the site.
+  if (!password) {
+    const host = new URL(request.url).hostname;
+    if (host === "localhost" || host === "127.0.0.1") return next();
+    return new Response(
+      "Site locked: SITE_PASSWORD is not configured for this environment.",
+      { status: 503, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store", "X-Robots-Tag": "noindex" } }
+    );
+  }
 
   const secret = env.COOKIE_SECRET || password;
   const validToken = await sign(secret, "authorized-v1");
