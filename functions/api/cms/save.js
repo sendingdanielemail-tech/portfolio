@@ -1,5 +1,6 @@
 // POST /api/cms/save  — commits edited copy blocks to GitHub.
 // Body: { path: "/work/adas", changes: { "adas-012": "<new inner html>", ... } }
+//   or: { action: "set-visibility", public: true|false }  → commits public.json
 // Requires: valid editor cookie (dh_edit), plus env GITHUB_TOKEN.
 // The site-wide password gate (_middleware.js) runs before this too.
 
@@ -86,18 +87,39 @@ export async function onRequestPost({ request, env }) {
 
   let body;
   try { body = await request.json(); } catch { return json({ ok: false, error: "Bad JSON." }, 400); }
+
+  const repo = env.GITHUB_REPO || DEFAULT_REPO, branch = env.GITHUB_BRANCH || "main";
+  const gh = {
+    Authorization: `Bearer ${env.GITHUB_TOKEN}`, Accept: "application/vnd.github+json",
+    "User-Agent": "dhennessy-xyz-editor", "X-GitHub-Api-Version": "2022-11-28",
+  };
+
+  // ---- visibility switch: commits public.json ----
+  if (body.action === "set-visibility") {
+    const makePublic = body.public === true;
+    const api = `https://api.github.com/repos/${repo}/contents/public.json`;
+    const get = await fetch(`${api}?ref=${branch}`, { headers: gh });
+    const meta = get.ok ? await get.json() : null;
+    const put = await fetch(api, {
+      method: "PUT", headers: { ...gh, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: makePublic ? "Open site to everyone (public.json)" : "Lock site behind password (public.json)",
+        content: b64encode(`{ "public": ${makePublic} }\n`), ...(meta ? { sha: meta.sha } : {}), branch,
+        committer: { name: "Daniel Hennessy", email: "sendingdanielemail@gmail.com" },
+      }),
+    });
+    if (!put.ok) return json({ ok: false, error: `GitHub write failed (${put.status}).` }, 502);
+    const data = await put.json();
+    return json({ ok: true, public: makePublic, commit: (data.commit && data.commit.sha || "").slice(0, 7) });
+  }
+
   const file = pathToFile(body.path);
   if (!file) return json({ ok: false, error: `Unknown page: ${body.path}` }, 400);
   const changes = body.changes && typeof body.changes === "object" ? body.changes : {};
   const ids = Object.keys(changes).filter((k) => /^[a-z0-9-]+$/i.test(k));
   if (!ids.length) return json({ ok: false, error: "Nothing to save." }, 400);
 
-  const repo = env.GITHUB_REPO || DEFAULT_REPO, branch = env.GITHUB_BRANCH || "main";
   const api = `https://api.github.com/repos/${repo}/contents/${file}`;
-  const gh = {
-    Authorization: `Bearer ${env.GITHUB_TOKEN}`, Accept: "application/vnd.github+json",
-    "User-Agent": "dhennessy-xyz-editor", "X-GitHub-Api-Version": "2022-11-28",
-  };
 
   const get = await fetch(`${api}?ref=${branch}`, { headers: gh });
   if (!get.ok) return json({ ok: false, error: `GitHub read failed (${get.status}).` }, 502);

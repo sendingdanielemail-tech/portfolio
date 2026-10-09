@@ -32,6 +32,8 @@
     #dh-cms-bar button.save { background: #e63312; border-color: #e63312; }
     #dh-cms-bar button.save:hover { background: #f5f5f0; color: #0a0a0a; border-color: #f5f5f0; }
     #dh-cms-bar button:disabled { opacity: .4; cursor: default; }
+    #dh-cms-bar button.vis.public { border-color: #7ee2a8; color: #7ee2a8; }
+    #dh-cms-bar button.vis.confirm { border-color: #ffb36b; color: #ffb36b; }
     @media (max-width: 640px) { #dh-cms-bar .hint { display: none; } }
   `;
   const style = document.createElement("style"); style.textContent = css; document.head.appendChild(style);
@@ -41,6 +43,7 @@
   bar.innerHTML = `
     <div class="lab">Editing <span>${location.hostname}</span></div>
     <div class="status"><span class="hint">Click any text to edit. </span><span class="n">No changes</span></div>
+    <button type="button" class="vis" title="Who can see the site">Site: …</button>
     <button type="button" class="discard" disabled>Discard</button>
     <button type="button" class="save" disabled>Save</button>
     <button type="button" class="exit">Exit editor</button>`;
@@ -96,6 +99,41 @@
     changed.clear(); location.href = "/edit?exit=1";
   });
   saveBtn.addEventListener("click", save);
+
+  // ---- visibility switch ---------------------------------------------------
+  const visBtn = $(".vis");
+  let isPublic = null, confirmTimer = null;
+  function paintVis() {
+    visBtn.classList.remove("confirm");
+    if (isPublic === null) { visBtn.textContent = "Site: ?"; return; }
+    visBtn.classList.toggle("public", isPublic);
+    visBtn.textContent = isPublic ? "Site: PUBLIC" : "Site: private";
+    visBtn.title = isPublic ? "Anyone with the link can view. Click to lock it behind the password." : "Visitors need the password. Click to open the site to everyone.";
+  }
+  fetch("/public.json", { cache: "no-store" }).then((r) => r.json()).then((c) => { isPublic = c.public === true; paintVis(); }).catch(paintVis);
+  visBtn.addEventListener("click", async () => {
+    if (isPublic === null) return;
+    if (!visBtn.classList.contains("confirm")) {
+      visBtn.classList.add("confirm");
+      visBtn.textContent = isPublic ? "Lock site? click again" : "Open to everyone? click again";
+      clearTimeout(confirmTimer); confirmTimer = setTimeout(paintVis, 5000);
+      return;
+    }
+    clearTimeout(confirmTimer);
+    const target = !isPublic;
+    visBtn.disabled = true; visBtn.textContent = "Switching…";
+    try {
+      const r = await fetch("/api/cms/save", { method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "set-visibility", public: target }) });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok || !data.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      isPublic = target; paintVis();
+      setStatus(target
+        ? `Site is opening to everyone (commit ${data.commit}). Live in about a minute. Search engines are told not to index it.`
+        : `Site is locking behind the password (commit ${data.commit}). Live in about a minute.`, "ok");
+    } catch (err) { paintVis(); setStatus(`Couldn't switch visibility: ${err.message}`, "err"); }
+    finally { visBtn.disabled = false; }
+  });
 
   async function save() {
     if (!changed.size || saving) return;

@@ -19,6 +19,21 @@ Things edit mode does not do (yet): add or remove whole sections, change images,
 
 Tip: on the home page the card titles sit inside links. In edit mode, clicking a card edits it instead of opening it; use the top nav to move between pages.
 
+## Opening the site to everyone (job-hunt windows)
+
+The editing bar has a **Site: private / Site: PUBLIC** button.
+
+1. Sign in at dhennessy.xyz/edit.
+2. Click **Site: private**. It asks you to click again to confirm. Click it again.
+3. About a minute later, anyone with the link can view the site with no password. The button turns green and reads **Site: PUBLIC**.
+4. To close the window, click **Site: PUBLIC** twice. A minute later, visitors need the password again.
+
+While the site is public, every page carries a "do not index" instruction for search engines, so a short open window doesn't leave Google copies behind. If you ever want it discoverable by search, ask Claude to lift that.
+
+Edit mode itself always needs the editor password, public or not. If you flip the site back to private while in edit mode, the next page may ask for the visitor password; enter it and your editing session carries on.
+
+Under the hood the button commits a one-line file, `public.json`, to GitHub. If the editor is ever unavailable, that file can be changed by hand and pushed: `{ "public": true }` opens, `{ "public": false }` locks.
+
 ## Where things live
 
 | Live URL | File |
@@ -55,7 +70,7 @@ cd ~/Desktop/Projects/Portfolio/site && ./deploy.sh "what I changed"
 
 or in VS Code: Terminal → Run Task → **Deploy to dhennessy.xyz**. It commits, pushes to GitHub, and Cloudflare rebuilds.
 
-Leave alone: anything in `<style>` or `<script>`, `class=` / `data-cms=` attributes, the `functions/` folder (password gate + editor backend), and `cms.js` (the editor).
+Leave alone: anything in `<style>` or `<script>`, `class=` / `data-cms=` attributes, the `functions/` folder (password gate + editor backend), `cms.js` (the editor), and `public.json` unless you mean to change visibility.
 
 ## If something goes wrong
 

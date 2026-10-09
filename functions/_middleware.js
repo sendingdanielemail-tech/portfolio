@@ -9,6 +9,7 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 // Editor mode: a second password (EDIT_PASSWORD) unlocks in-page copy editing.
 // Sign in at /edit, sign out at /edit?exit=1. When the editor cookie is valid,
 // every HTML page gets /cms.js injected, which turns data-cms blocks editable.
+// Visibility: /public.json {"public":true} opens the site to everyone (toolbar toggle).
 const EDIT_COOKIE = "dh_edit";
 const EDIT_MAX_AGE = 60 * 60 * 12; // 12 hours
 const CONTACT_EMAIL = "sendingdanielemail@gmail.com";
@@ -70,7 +71,18 @@ export async function onRequest(context) {
 
   const secret = env.COOKIE_SECRET || password || "local-dev";
   const validToken = password ? await sign(secret, "authorized-v1") : null;
-  const siteAuthed = !password || getCookie(request, COOKIE_NAME) === validToken;
+
+  // Visibility switch: /public.json in the repo ({"public": true|false}), flipped
+  // from the editor toolbar. Only honored where SITE_PASSWORD is configured, so a
+  // preview deployment (no secrets) can never be opened by it.
+  let isPublic = false;
+  if (password && env.ASSETS) {
+    try {
+      const cfg = await (await env.ASSETS.fetch(new URL("/public.json", request.url))).json();
+      isPublic = cfg && cfg.public === true;
+    } catch (e) { isPublic = false; }
+  }
+  const siteAuthed = !password || isPublic || getCookie(request, COOKIE_NAME) === validToken;
 
   if (!siteAuthed) {
     // Handle a login submission.
@@ -118,7 +130,13 @@ export async function onRequest(context) {
     return htmlResponse(editLoginPage({ error: false, next: safeNext(url.searchParams.get("next") || "/") }), 200);
   }
 
-  const response = await next();
+  let response = await next();
+  if (isPublic && !editing) {
+    // Open window: serve, but keep search engines from indexing/caching it.
+    const h = new Headers(response.headers);
+    h.set("X-Robots-Tag", "noindex, nofollow");
+    response = new Response(response.body, { status: response.status, headers: h });
+  }
   if (!editing) return response;
 
   // Editing: inject the editor script into HTML pages and make sure nothing caches.
