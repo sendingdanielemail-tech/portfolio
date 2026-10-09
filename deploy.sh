@@ -29,14 +29,16 @@ git add -A
 git commit -q -m "$MSG" || { echo "✗ Commit failed."; exit 1; }
 
 echo "→ Pushing to GitHub (this is the deploy)..."
-if git push -q origin main; then
+if push_out=$(git push origin main 2>&1); then
   echo
   echo "✓ Pushed. Cloudflare is rebuilding dhennessy.xyz from GitHub now."
   echo "  Give it about a minute, then hard-refresh the page (Cmd+Shift+R)."
   exit 0
 fi
 
-echo "⚠  GitHub push failed (usually an expired token). Trying a direct publish instead..."
+echo "⚠  GitHub push failed (usually an expired token):"
+echo "$push_out" | sed 's/^/   /'
+echo "   Trying a direct publish instead..."
 if wrangler pages deploy . --project-name="$PROJECT" --branch=main --commit-dirty=true; then
   echo
   echo "✓ Live at https://dhennessy.xyz via direct publish."

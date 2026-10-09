@@ -49,14 +49,32 @@
     <button type="button" class="exit">Exit editor</button>`;
   document.body.appendChild(bar);
   const $ = (s) => bar.querySelector(s);
-  const statusEl = $(".status"), nEl = $(".n"), saveBtn = $(".save"), discardBtn = $(".discard");
+  const statusEl = $(".status"), saveBtn = $(".save"), discardBtn = $(".discard");
 
-  function setStatus(msg, cls) { statusEl.className = "status " + (cls || ""); statusEl.innerHTML = msg; }
-  function refresh() {
-    const n = changed.size;
-    nEl.textContent = n ? `${n} unsaved change${n === 1 ? "" : "s"}` : "No changes";
-    saveBtn.disabled = !n || saving; discardBtn.disabled = !n || saving;
-    saveBtn.textContent = saving ? "Saving…" : (n ? `Save ${n}` : "Save");
+  function setStatus(msg, cls) { statusEl.className = "status " + (cls || ""); statusEl.textContent = msg; }
+  function resetStatus() { statusEl.className = "status"; statusEl.innerHTML = '<span class="hint">Click any text to edit. </span><span class="n"></span>'; refresh(); }
+
+  // POST to the editor API; resolves with the JSON body, rejects with a readable message.
+  async function api(payload) {
+    const r = await fetch("/api/cms/save", {
+      method: "POST", credentials: "same-origin",
+      headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || !data.ok) throw new Error(data.error || `HTTP ${r.status}`);
+    return data;
+  }
+
+  // Two-click confirmation: arm(btn) puts a button into a 5s "click again" state;
+  // callers check isArmed(btn) on the next click.
+  function arm(btn, label) {
+    const restore = btn.textContent;
+    btn.classList.add("confirm"); btn.textContent = label;
+    btn._disarm = setTimeout(() => { btn.classList.remove("confirm"); btn.textContent = restore; }, 5000);
+  }
+  function isArmed(btn) {
+    if (!btn.classList.contains("confirm")) return false;
+    clearTimeout(btn._disarm); btn.classList.remove("confirm"); return true;
   }
 
   // ---- make blocks editable ---------------------------------------------
@@ -72,6 +90,8 @@
       refresh();
     });
     el.addEventListener("keydown", (e) => {
+      // execCommand is deprecated but remains the only cross-browser way to insert into a
+      // contenteditable while keeping the browser's undo stack intact.
       if (e.key === "Enter") { e.preventDefault(); document.execCommand("insertLineBreak"); }
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") { e.preventDefault(); save(); }
     });
@@ -92,47 +112,40 @@
   // ---- actions -----------------------------------------------------------
   discardBtn.addEventListener("click", () => {
     changed.forEach((el, id) => { el.innerHTML = originals.get(id); el.removeAttribute("data-cms-changed"); });
-    changed.clear(); refresh(); setStatus('<span class="n">No changes</span>');
+    changed.clear(); resetStatus();
   });
-  $(".exit").addEventListener("click", () => {
-    if (changed.size && !window.__dhCmsForceExit) { setStatus("You have unsaved changes. Save or Discard first, or click Exit again to leave anyway.", "err"); window.__dhCmsForceExit = true; return; }
+  const exitBtn = $(".exit");
+  exitBtn.addEventListener("click", () => {
+    if (changed.size && !isArmed(exitBtn)) { arm(exitBtn, "Leave without saving?"); return; }
     changed.clear(); location.href = "/edit?exit=1";
   });
   saveBtn.addEventListener("click", save);
 
   // ---- visibility switch ---------------------------------------------------
   const visBtn = $(".vis");
-  let isPublic = null, confirmTimer = null;
+  let isPublic = null;
   function paintVis() {
     visBtn.classList.remove("confirm");
-    if (isPublic === null) { visBtn.textContent = "Site: ?"; return; }
-    visBtn.classList.toggle("public", isPublic);
-    visBtn.textContent = isPublic ? "Site: PUBLIC" : "Site: private";
-    visBtn.title = isPublic ? "Anyone with the link can view. Click to lock it behind the password." : "Visitors need the password. Click to open the site to everyone.";
+    visBtn.classList.toggle("public", isPublic === true);
+    visBtn.textContent = isPublic === null ? "Site: ?" : (isPublic ? "Site: PUBLIC" : "Site: private");
+    visBtn.title = isPublic ? "Anyone with the link can view. Click to lock it behind the password."
+                            : "Visitors need the password. Click to open the site to everyone.";
   }
-  fetch("/public.json", { cache: "no-store" }).then((r) => r.json()).then((c) => { isPublic = c.public === true; paintVis(); }).catch(paintVis);
+  fetch("/public.json", { cache: "no-store" }).then((r) => r.json())
+    .then((c) => { isPublic = c.public === true; }).catch(() => {}).finally(paintVis);
   visBtn.addEventListener("click", async () => {
     if (isPublic === null) return;
-    if (!visBtn.classList.contains("confirm")) {
-      visBtn.classList.add("confirm");
-      visBtn.textContent = isPublic ? "Lock site? click again" : "Open to everyone? click again";
-      clearTimeout(confirmTimer); confirmTimer = setTimeout(paintVis, 5000);
-      return;
-    }
-    clearTimeout(confirmTimer);
+    if (!isArmed(visBtn)) { arm(visBtn, isPublic ? "Lock site? click again" : "Open to everyone? click again"); return; }
     const target = !isPublic;
     visBtn.disabled = true; visBtn.textContent = "Switching…";
     try {
-      const r = await fetch("/api/cms/save", { method: "POST", credentials: "same-origin",
-        headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "set-visibility", public: target }) });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok || !data.ok) throw new Error(data.error || `HTTP ${r.status}`);
-      isPublic = target; paintVis();
+      const data = await api({ action: "set-visibility", public: target });
+      isPublic = target;
       setStatus(target
         ? `Site is opening to everyone (commit ${data.commit}). Live in about a minute. Search engines are told not to index it.`
         : `Site is locking behind the password (commit ${data.commit}). Live in about a minute.`, "ok");
-    } catch (err) { paintVis(); setStatus(`Couldn't switch visibility: ${err.message}`, "err"); }
-    finally { visBtn.disabled = false; }
+    } catch (err) { setStatus(`Couldn't switch visibility: ${err.message}`, "err"); }
+    finally { visBtn.disabled = false; paintVis(); }
   });
 
   async function save() {
@@ -141,13 +154,7 @@
     const changes = {};
     changed.forEach((el, id) => { changes[id] = el.innerHTML; });
     try {
-      const r = await fetch("/api/cms/save", {
-        method: "POST", credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ path: location.pathname, changes }),
-      });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok || !data.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      const data = await api({ path: location.pathname, changes });
       changed.forEach((el, id) => { originals.set(id, el.innerHTML); el.removeAttribute("data-cms-changed"); });
       changed.clear();
       setStatus(`Saved (commit ${data.commit}). Cloudflare is rebuilding — live in about a minute. Keep editing or exit.`, "ok");

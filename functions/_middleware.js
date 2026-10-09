@@ -3,41 +3,23 @@
 // variable (a Cloudflare secret) — it never appears in the page source.
 // A signed cookie keeps visitors logged in so they only enter it once.
 // If SITE_PASSWORD is missing the gate fails CLOSED (503) except on localhost.
-
-const COOKIE_NAME = "dh_gate";
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
+//
 // Editor mode: a second password (EDIT_PASSWORD) unlocks in-page copy editing.
 // Sign in at /edit, sign out at /edit?exit=1. When the editor cookie is valid,
 // every HTML page gets /cms.js injected, which turns data-cms blocks editable.
-// Visibility: /public.json {"public":true} opens the site to everyone (toolbar toggle).
-const EDIT_COOKIE = "dh_edit";
-const EDIT_MAX_AGE = 60 * 60 * 12; // 12 hours
+//
+// Visibility: /public.json {"public": true} opens the site to everyone (toolbar
+// toggle). Public pages carry X-Robots-Tag: noindex so open windows leave no
+// search-engine copies behind.
+
+import {
+  SITE_COOKIE, EDIT_COOKIE, SITE_COOKIE_MAX_AGE, EDIT_COOKIE_MAX_AGE,
+  getCookie, siteToken, editorToken, isEditor, setCookie, json,
+} from "./_lib/auth.js";
+
 const CONTACT_EMAIL = "sendingdanielemail@gmail.com";
 
 // --- helpers ---------------------------------------------------------------
-
-async function sign(secret, message) {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message));
-  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-function getCookie(request, name) {
-  const header = request.headers.get("Cookie") || "";
-  for (const part of header.split(";")) {
-    const i = part.indexOf("=");
-    if (i > -1 && part.slice(0, i).trim() === name) {
-      return decodeURIComponent(part.slice(i + 1).trim());
-    }
-  }
-  return null;
-}
 
 // Only allow same-site relative paths as a post-login redirect target.
 function safeNext(value) {
@@ -51,6 +33,28 @@ function escapeAttr(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+const text = (body, status, extra = {}) =>
+  new Response(body, { status, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store", ...extra } });
+
+const redirect = (location, cookie) => {
+  const headers = new Headers({ Location: location, "Cache-Control": "no-store" });
+  if (cookie) headers.append("Set-Cookie", cookie);
+  return new Response(null, { status: 302, headers });
+};
+
+// Is the site currently open to everyone? Reads /public.json from the deployed
+// assets. Only honored where SITE_PASSWORD is configured, so a preview
+// deployment (no secrets) can never be opened by it.
+async function readPublicFlag(env, request) {
+  if (!env.SITE_PASSWORD || !env.ASSETS) return false;
+  try {
+    const cfg = await (await env.ASSETS.fetch(new URL("/public.json", request.url))).json();
+    return !!cfg && cfg.public === true;
+  } catch {
+    return false;
+  }
+}
+
 // --- main ------------------------------------------------------------------
 
 export async function onRequest(context) {
@@ -58,90 +62,66 @@ export async function onRequest(context) {
   const password = env.SITE_PASSWORD;
   const url = new URL(request.url);
   const isLocal = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+  const isApi = url.pathname.startsWith("/api/");
 
   // No password configured: stay OPEN only for local development
   // (wrangler pages dev / localhost). Everywhere else, fail CLOSED so a
   // preview deployment or a lost secret can never expose the site.
   if (!password && !isLocal) {
-    return new Response(
-      "Site locked: SITE_PASSWORD is not configured for this environment.",
-      { status: 503, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store", "X-Robots-Tag": "noindex" } }
-    );
+    return text("Site locked: SITE_PASSWORD is not configured for this environment.", 503, { "X-Robots-Tag": "noindex" });
   }
 
-  const secret = env.COOKIE_SECRET || password || "local-dev";
-  const validToken = password ? await sign(secret, "authorized-v1") : null;
+  // ---- visitor gate ---------------------------------------------------------
+  const validToken = password ? await siteToken(env) : null;
+  const hasCookie = !password || getCookie(request, SITE_COOKIE) === validToken;
+  // Only consult public.json when the cookie alone wouldn't let the request through.
+  const isPublic = hasCookie ? false : await readPublicFlag(env, request);
 
-  // Visibility switch: /public.json in the repo ({"public": true|false}), flipped
-  // from the editor toolbar. Only honored where SITE_PASSWORD is configured, so a
-  // preview deployment (no secrets) can never be opened by it.
-  let isPublic = false;
-  if (password && env.ASSETS) {
-    try {
-      const cfg = await (await env.ASSETS.fetch(new URL("/public.json", request.url))).json();
-      isPublic = cfg && cfg.public === true;
-    } catch (e) { isPublic = false; }
-  }
-  const siteAuthed = !password || isPublic || getCookie(request, COOKIE_NAME) === validToken;
-
-  if (!siteAuthed) {
-    // Handle a login submission.
-    if (request.method === "POST" && url.pathname !== "/api/cms/save") {
-      const form = await request.formData();
-      const submitted = form.get("password");
-      const target = safeNext(form.get("next"));
-      if (typeof submitted === "string" && submitted === password) {
-        const headers = new Headers({ Location: target, "Cache-Control": "no-store" });
-        headers.append(
-          "Set-Cookie",
-          `${COOKIE_NAME}=${validToken}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${COOKIE_MAX_AGE}`
-        );
-        return new Response(null, { status: 302, headers });
-      }
-      return htmlResponse(loginPage({ error: true, next: target }), 401);
-    }
-    // Any other request from an unauthenticated visitor → show the gate.
-    return htmlResponse(loginPage({ error: false, next: safeNext(url.pathname + url.search) }), 401);
-  }
-
-  // ---- editor mode (site-authenticated visitors only) ----------------------
-  const editPw = env.EDIT_PASSWORD;
-  const editToken = editPw ? await sign(secret, "editor-v1:" + editPw) : null;
-  const editing = !!editPw && getCookie(request, EDIT_COOKIE) === editToken;
-
-  if (url.pathname === "/edit") {
-    if (!editPw) return new Response("Editor not configured (EDIT_PASSWORD secret missing).", { status: 404, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store" } });
-    if (url.searchParams.get("exit") === "1") {
-      const headers = new Headers({ Location: "/", "Cache-Control": "no-store" });
-      headers.append("Set-Cookie", `${EDIT_COOKIE}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`);
-      return new Response(null, { status: 302, headers });
-    }
-    if (editing) return Response.redirect(new URL(safeNext(url.searchParams.get("next") || "/"), url).toString(), 302);
+  if (!hasCookie && !isPublic) {
+    if (isApi) return json({ ok: false, error: "Not signed in to the site." }, 401);
     if (request.method === "POST") {
       const form = await request.formData();
       const target = safeNext(form.get("next"));
-      if (form.get("password") === editPw) {
-        const headers = new Headers({ Location: target, "Cache-Control": "no-store" });
-        headers.append("Set-Cookie", `${EDIT_COOKIE}=${editToken}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${EDIT_MAX_AGE}`);
-        return new Response(null, { status: 302, headers });
+      if (form.get("password") === password) {
+        return redirect(target, setCookie(SITE_COOKIE, validToken, SITE_COOKIE_MAX_AGE));
       }
-      return htmlResponse(editLoginPage({ error: true, next: target }), 401);
+      return htmlResponse(loginPage({ error: true, next: target }), 401);
     }
-    return htmlResponse(editLoginPage({ error: false, next: safeNext(url.searchParams.get("next") || "/") }), 200);
+    return htmlResponse(loginPage({ error: false, next: safeNext(url.pathname + url.search) }), 401);
   }
 
-  let response = await next();
-  if (isPublic && !editing) {
-    // Open window: serve, but keep search engines from indexing/caching it.
+  // ---- editor mode ----------------------------------------------------------
+  const editPw = env.EDIT_PASSWORD;
+  const editing = await isEditor(request, env);
+
+  if (url.pathname === "/edit") {
+    if (!editPw) return text("Editor not configured (EDIT_PASSWORD secret missing).", 404);
+    if (url.searchParams.get("exit") === "1") return redirect("/", setCookie(EDIT_COOKIE, "", 0));
+    const target = safeNext(url.searchParams.get("next") || "/");
+    if (editing) return redirect(target);
+    if (request.method === "POST") {
+      const form = await request.formData();
+      const postTarget = safeNext(form.get("next"));
+      if (form.get("password") === editPw) {
+        return redirect(postTarget, setCookie(EDIT_COOKIE, await editorToken(env), EDIT_COOKIE_MAX_AGE));
+      }
+      return htmlResponse(editLoginPage({ error: true, next: postTarget }), 401);
+    }
+    return htmlResponse(editLoginPage({ error: false, next: target }), 200);
+  }
+
+  const response = await next();
+
+  if (!editing) {
+    if (!isPublic) return response;
+    // Open window, anonymous visitor: serve, but keep search engines out.
     const h = new Headers(response.headers);
     h.set("X-Robots-Tag", "noindex, nofollow");
-    response = new Response(response.body, { status: response.status, headers: h });
+    return new Response(response.body, { status: response.status, headers: h });
   }
-  if (!editing) return response;
 
   // Editing: inject the editor script into HTML pages and make sure nothing caches.
-  const ct = response.headers.get("Content-Type") || "";
-  if (!ct.includes("text/html")) return response;
+  if (!(response.headers.get("Content-Type") || "").includes("text/html")) return response;
   const out = new HTMLRewriter()
     .on("body", { element(el) { el.append('<script src="/cms.js" defer></script>', { html: true }); } })
     .transform(response);
