@@ -9,7 +9,7 @@ import { isEditor, json } from "../../_lib/auth.js";
 const DEFAULT_REPO = "sendingdanielemail-tech/portfolio";
 const COMMITTER = { name: "Daniel Hennessy", email: "sendingdanielemail@gmail.com" };
 const PAGES = new Set([
-  "index.html", "about.html",
+  "index.html", "about.html", "404.html",
   "work/adas.html", "work/inspections.html", "work/roll-aways.html",
   "work/grocery.html", "work/vibe-coding.html", "work/five-smart-friends.html",
 ]);

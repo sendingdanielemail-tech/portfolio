@@ -40,6 +40,7 @@ Under the hood the button commits a one-line file, `public.json`, to GitHub. If 
 |---|---|
 | dhennessy.xyz | `index.html` |
 | dhennessy.xyz/about | `about.html` |
+| any wrong URL | `404.html` (page-not-found; editable at dhennessy.xyz/404 in edit mode) |
 | dhennessy.xyz/work/adas | `work/adas.html` |
 | dhennessy.xyz/work/inspections | `work/inspections.html` |
 | dhennessy.xyz/work/roll-aways | `work/roll-aways.html` |

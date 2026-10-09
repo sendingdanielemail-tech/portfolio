@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="author" content="Daniel Hennessy">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<title>Page not found — Daniel Hennessy</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f5f0;
+    --red: #e63312;
+    --gray: #888;
+    --dark-gray: #555;
+    --rule: rgba(0, 0, 0, 0.05);
+    --margin: clamp(24px, 5vw, 80px);
+    --gutter: clamp(16px, 2vw, 24px);
+    --cols: 6;
+  }
+  html, body { min-height: 100%; }
+  body {
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    background-color: var(--white);
+    color: var(--black);
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* Column guides — the 6-column Brockmann structure */
+  .grid-guides {
+    position: fixed; inset: 0;
+    display: grid; grid-template-columns: repeat(var(--cols), 1fr);
+    gap: var(--gutter); padding: 0 var(--margin);
+    pointer-events: none; z-index: 0;
+  }
+  .grid-guides .col-guide { border-left: 1px solid var(--rule); border-right: 1px solid var(--rule); }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(var(--cols), 1fr);
+    gap: 0 var(--gutter); padding: 0 var(--margin);
+    position: relative; z-index: 1;
+  }
+  .col-1-2 { grid-column: 1 / 3; }
+  .col-1-6 { grid-column: 1 / -1; }
+  .col-3-6 { grid-column: 3 / -1; }
+
+  nav {
+    padding: var(--margin); padding-bottom: 0;
+    display: flex; justify-content: space-between; align-items: baseline;
+    position: relative; z-index: 1;
+  }
+  nav .name { font-weight: 900; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; }
+  nav .name a { color: var(--black); text-decoration: none; }
+  nav ul { list-style: none; display: flex; gap: 32px; }
+  nav ul li a {
+    font-size: 13px; color: var(--gray); text-decoration: none;
+    text-transform: uppercase; letter-spacing: 0.06em; transition: color 0.2s;
+  }
+  nav ul li a:hover { color: var(--black); }
+
+  main { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: clamp(40px, 8vh, 120px) 0; }
+
+  .label {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--red);
+    padding-top: 0.9em;
+  }
+
+  /* The number: as big as the six columns allow */
+  .code {
+    font-weight: 900;
+    font-size: clamp(150px, 58vw, 900px);   /* fills the six columns on desktop */
+    line-height: 0.8;
+    letter-spacing: -0.06em;
+    margin: 0.1em 0 0 -0.03em;              /* optical: the "4" sits on column line 1 */
+    color: var(--black);
+    overflow-wrap: normal;
+  }
+
+  .lede {
+    font-size: clamp(18px, 2.2vw, 26px);
+    line-height: 1.4;
+    color: var(--dark-gray);
+    max-width: 30ch;
+    margin-top: clamp(24px, 4vh, 48px);
+  }
+
+  /* Two big ways out */
+  .ways { margin-top: clamp(40px, 7vh, 96px); border-top: 1px solid var(--rule); }
+  .way {
+    display: grid; grid-template-columns: subgrid; grid-column: 1 / -1;
+    align-items: start;
+    padding: clamp(20px, 3vh, 36px) 0;
+    border-bottom: 1px solid var(--rule);
+    text-decoration: none; color: var(--black);
+  }
+  .way .label { padding-top: 0.5em; }
+  .way .text {
+    grid-column: 3 / -1;
+    font-size: clamp(32px, 6vw, 88px);
+    font-weight: 900; line-height: 1; letter-spacing: -0.03em;
+    transition: color 0.2s, transform 0.25s ease;
+  }
+  .way .text::after { content: " \2192"; font-weight: 400; color: var(--gray); transition: color 0.2s; }
+  .way:hover .text { transform: translateX(0.12em); }
+  .way:hover .text::after { color: var(--red); }
+  .way:focus-visible { outline: 2px solid var(--red); outline-offset: 4px; }
+
+  footer { padding: var(--margin); padding-top: 0; position: relative; z-index: 1; }
+  footer .footer-content {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 12px; color: var(--gray); letter-spacing: 0.04em;
+    border-top: 1px solid var(--rule); padding-top: 20px;
+  }
+  footer a { color: var(--gray); text-decoration: none; }
+  footer a:hover { color: var(--black); }
+
+  @media (max-width: 768px) {
+    .grid-guides { display: none; }
+    .grid { grid-template-columns: 1fr; }
+    .col-1-2, .col-1-6, .col-3-6 { grid-column: 1; }
+    .way { grid-template-columns: 1fr; gap: 8px; }
+    .way .text { grid-column: 1; }
+    .code { font-size: clamp(150px, 60vw, 320px); }
+    nav ul { gap: 20px; }
+    footer .footer-content { flex-direction: column; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-guides">
+  <div class="col-guide"></div><div class="col-guide"></div><div class="col-guide"></div>
+  <div class="col-guide"></div><div class="col-guide"></div><div class="col-guide"></div>
+</div>
+
+<nav>
+  <div class="name"><a href="/">Daniel Hennessy</a></div>
+  <ul>
+    <li><a href="/">Work</a></li>
+    <li><a href="/about">About</a></li>
+  </ul>
+</nav>
+
+<main>
+  <div class="grid">
+    <div class="col-1-2"><div data-cms="404-001" class="label">Error &middot; Page not found</div></div>
+    <h1 data-cms="404-002" class="code col-1-6" aria-label="404">404</h1>
+    <div class="col-3-6">
+      <p data-cms="404-003" class="lede">This page doesn&rsquo;t exist, or it moved while I was reorganizing. Everything worth seeing is one click away.</p>
+    </div>
+  </div>
+
+  <div class="grid ways">
+    <a class="way" href="/">
+      <div class="col-1-2"><div data-cms="404-004" class="label">01</div></div>
+      <div data-cms="404-005" class="text">See the work</div>
+    </a>
+    <a class="way" href="/about">
+      <div class="col-1-2"><div data-cms="404-006" class="label">02</div></div>
+      <div data-cms="404-007" class="text">About me</div>
+    </a>
+  </div>
+</main>
+
+<footer>
+  <div data-cms="404-008" class="footer-content">
+    <span>&copy; 2026 Daniel Hennessy</span>
+    <span><a href="mailto:sendingdanielemail@gmail.com">Email</a> &middot; <a href="https://www.linkedin.com/in/daniel-hennessy/" target="_blank" rel="noopener">LinkedIn</a></span>
+  </div>
+</footer>
+
+</body>
+</html>
