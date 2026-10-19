@@ -52,6 +52,15 @@
   const statusEl = $(".status"), saveBtn = $(".save"), discardBtn = $(".discard");
 
   function setStatus(msg, cls) { statusEl.className = "status " + (cls || ""); statusEl.textContent = msg; }
+  // Sync the change counter and button states with `changed` / `saving`.
+  // The ".n" span is re-queried each time: setStatus() replaces it with plain text
+  // and resetStatus() recreates it, so a cached reference would go stale.
+  function refresh() {
+    const n = changed.size, nEl = statusEl.querySelector(".n");
+    if (nEl) nEl.textContent = n ? `${n} unsaved change${n === 1 ? "" : "s"}` : "No changes";
+    saveBtn.disabled = !n || saving; discardBtn.disabled = !n || saving;
+    saveBtn.textContent = saving ? "Saving…" : (n ? `Save ${n}` : "Save");
+  }
   function resetStatus() { statusEl.className = "status"; statusEl.innerHTML = '<span class="hint">Click any text to edit. </span><span class="n"></span>'; refresh(); }
 
   // POST to the editor API; resolves with the JSON body, rejects with a readable message.
