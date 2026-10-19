@@ -123,7 +123,7 @@ export async function onRequest(context) {
   // Editing: inject the editor script into HTML pages and make sure nothing caches.
   if (!(response.headers.get("Content-Type") || "").includes("text/html")) return response;
   const out = new HTMLRewriter()
-    .on("body", { element(el) { el.append('<script src="/cms.js" defer></script>', { html: true }); } })
+    .on("body", { element(el) { el.append(`<script src="/cms.js?v=${env.CF_PAGES_COMMIT_SHA || Date.now()}" defer></script>`, { html: true }); } })
     .transform(response);
   const headers = new Headers(out.headers);
   headers.set("Cache-Control", "no-store");

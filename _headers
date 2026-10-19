@@ -1,0 +1,4 @@
+# Cloudflare Pages headers. The editor script must never be cached: a stale
+# copy left the Save button dead for hours after a fix (2026-10-19).
+/cms.js
+  Cache-Control: no-store
