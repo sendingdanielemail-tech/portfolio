@@ -59,7 +59,7 @@
     const n = changed.size, nEl = statusEl.querySelector(".n");
     if (nEl) nEl.textContent = n ? `${n} unsaved change${n === 1 ? "" : "s"}` : "No changes";
     saveBtn.disabled = !n || saving; discardBtn.disabled = !n || saving;
-    saveBtn.textContent = saving ? "Saving…" : (n ? `Save ${n}` : "Save");
+    saveBtn.textContent = saving ? "Saving…" : "Save";
   }
   function resetStatus() { statusEl.className = "status"; statusEl.innerHTML = '<span class="hint">Click any text to edit. </span><span class="n"></span>'; refresh(); }
 
